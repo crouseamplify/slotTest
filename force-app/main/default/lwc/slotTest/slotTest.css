@@ -1,0 +1,486 @@
+/* DXP Link Text Styling for LWR Sites */
+
+/* Ensure URL links in datatable inherit proper DXP styling */
+.dxp-link-text lightning-datatable a {
+    text-decoration: var(--dxp-s-link-text-decoration);
+}
+
+.dxp-link-text lightning-datatable a:hover {
+    text-decoration: var(--dxp-s-link-text-decoration-hover);
+}
+
+.dxp-link-text lightning-datatable a:focus {
+    text-decoration: var(--dxp-s-link-text-decoration-focus);
+}
+
+/* General link styling */
+.dxp-link-text a {
+    text-decoration: var(--dxp-s-link-text-decoration);
+}
+
+.dxp-link-text a:hover {
+    text-decoration: var(--dxp-s-link-text-decoration-hover);
+}
+
+.dxp-link-text a:focus {
+    text-decoration: var(--dxp-s-link-text-decoration-focus);
+}
+
+/* Component container with border and proper spacing */
+.component-container {
+    background-color: var(--dxp-c-record-list-table-body-background-color, white);
+    border: var(--dxp-c-record-list-header-border-width, 1px) solid var(--dxp-c-record-list-header-border-color, #E5E5E5);
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+    margin: 0;
+    overflow: hidden; /* Ensures header background goes to edges */
+}
+
+/* Header section with gray background */
+.header-section {
+    background-color: rgb(242, 242, 242);
+    margin: 0;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0;
+}
+
+/* Header title using site base font */
+.header-title {
+    font-family: var(--dxp-s-base-font-family, var(--dxp-s-body-font-family));
+    font-size: var(--dxp-s-base-font-size, var(--dxp-s-body-font-size));
+    margin: 0;
+    padding: 0;
+}
+
+/* Data source mode badge styling */
+.header-title .slds-badge {
+    font-size: 0.6rem;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Content area padding (everything except header) */
+/* .content-area {
+    padding: 0.75rem 1rem;
+} */
+
+/* Enhanced empty state - shows header but minimal content */
+.empty-state-enhanced {
+    /* No content needed - just header will show */
+}
+
+/* Responsive datatable container */
+.responsive-table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin: 0;
+    padding: 0;
+}
+
+/* Limited height table container for pagination */
+.limited-height-table {
+    max-height: 200px; /* Approximately 5 rows depending on row height */
+    overflow-y: auto;
+}
+
+/* Make datatable responsive to container width */
+.responsive-datatable {
+    width: 100%;
+    min-width: 100%;
+}
+
+/* Ensure single column tables expand to full width */
+.responsive-datatable lightning-datatable {
+    width: 100%;
+    margin: 0 !important;
+}
+
+/* Remove gray background from datatable header */
+.responsive-datatable lightning-datatable table thead {
+    background: transparent !important;
+}
+
+/* Set font size for datatable rows - smaller text */
+.responsive-datatable lightning-datatable table tbody td {
+    font-size: 0.75rem !important; /* Smaller than previous 0.8125rem */
+    padding: 0.5rem 0.75rem !important; /* Slightly reduce padding */
+}
+
+.responsive-datatable lightning-datatable table tbody {
+    font-size: 0.75rem !important;
+}
+
+/* Override any default datatable font sizes including headers */
+.responsive-datatable lightning-datatable .slds-table td,
+.responsive-datatable lightning-datatable .slds-table th {
+    font-size: 0.75rem !important;
+    padding: 0.5rem 0.75rem !important;
+}
+
+.slds-table {
+  font-size: .75rem !important;
+}
+
+/* Make header text smaller too */
+.responsive-datatable lightning-datatable table thead th {
+    font-size: 0.75rem !important;
+    padding: 0.5rem 0.75rem !important;
+}
+
+/* Force consistent column widths and enable horizontal scrolling when needed */
+.responsive-datatable lightning-datatable table {
+    table-layout: fixed !important;
+    width: 100% !important;
+}
+
+.responsive-datatable lightning-datatable th,
+.responsive-datatable lightning-datatable td {
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+}
+
+/* For very wide containers, limit max width for readability */
+@media (min-width: 1440px) {
+    .responsive-table-container {
+        max-width: none; /* Remove max-width restriction */
+    }
+}
+
+/* Action Button Container Styling */
+.action-button-container-single .action-button {
+    margin: 0; /* Single button gets no margin */
+}
+
+.action-button-container-dual .action-button {
+    margin: 0 0.5rem; /* Dual buttons get side margins for spacing */
+}
+
+.action-button-container-dual .action-button:first-child {
+    margin-right: 0.75rem; /* Extra space between View More and View All */
+}
+
+.action-button-container-dual .action-button:last-child {
+    margin-left: 0.75rem;
+}
+
+/* Compact action button container */
+.compact-action-buttons {
+    margin-top: 0.25rem !important;
+    margin-bottom: 1rem !important;
+}
+
+/* Loading state enhancements for dual mode */
+.loading-container {
+    text-align: center;
+    padding: 1rem; /* Reduced from 2rem */
+}
+
+.loading-container p {
+    color: #706e6b;
+    font-size: 0.875rem;
+}
+
+/* Error container enhancements for better mode-specific messaging */
+.error-container {
+    border-left: 4px solid #c23934;
+    padding: 1rem;
+    background-color: #fef7f7;
+    margin: 1rem 0;
+}
+
+.error-container .slds-text-body_small {
+    color: #706e6b;
+    margin-top: 0.5rem;
+}
+
+/* Enhanced no-data container for mode-specific messaging */
+.no-data-container {
+    text-align: center;
+    padding: 1.5rem; /* Reduced from 3rem */
+    color: #706e6b;
+}
+
+.no-data-container .slds-text-body_small {
+    color: #8a8a8a;
+    font-style: italic;
+}
+
+/* Debug section styling */
+.debug-section {
+    background-color: #f3f3f3;
+    border: 1px solid #d8dde6;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.related-list-details {
+    background-color: #fafaf9;
+    border-left: 4px solid #0176d3;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.debug-code {
+    font-family: 'Courier New', monospace;
+    background-color: #f4f6f9;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.875rem;
+}
+
+.button-info {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background-color: #ffffff;
+    border: 1px solid #d8dde6;
+    border-radius: 4px;
+}
+
+.related-list-item {
+    border-bottom: 1px solid #e5e5e5;
+    padding: 0.75rem 0;
+}
+
+.related-list-item:last-child {
+    border-bottom: none;
+}
+
+.input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .input-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ========================= */
+/*                           */
+/*    CPE Integration        */
+/*                           */
+/* ========================= */
+
+/* Smart change detection prevents unnecessary animations */
+.component-container {
+    transition: none; /* Disable transitions to prevent flickering during smart updates */
+}
+
+/* Mode indicator styling for debug badges */
+.mode-indicator {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+}
+
+.mode-indicator--arl {
+    background-color: #e8f4fd;
+    color: #0176d3;
+    border: 1px solid #c9dbea;
+}
+
+.mode-indicator--soql {
+    background-color: #fef7e0;
+    color: #b45500;
+    border: 1px solid #ddbd4a;
+}
+
+/* Performance indicators */
+.performance-indicator {
+    font-size: 0.75rem;
+    color: #706e6b;
+    font-style: italic;
+}
+
+.performance-indicator--fast {
+    color: #4bca81;
+}
+
+.performance-indicator--slow {
+    color: #ea001e;
+}
+
+/* Configuration status styling */
+.config-status {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    margin: 0.5rem 0;
+}
+
+.config-status--valid {
+    background-color: #f3f9f4;
+    color: #4bca81;
+    border: 1px solid #4bca81;
+}
+
+.config-status--invalid {
+    background-color: #fef7f7;
+    color: #ea001e;
+    border: 1px solid #ea001e;
+}
+
+.config-status--warning {
+    background-color: #fef8f2;
+    color: #ffb75d;
+    border: 1px solid #ffb75d;
+}
+
+/* ************************* */
+/*                           */
+/*           Slots           */
+/*                           */
+/* ************************* */
+
+.responsive-header-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+.header-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1 1 200px;
+    min-width: 200px;
+}
+
+.header-title-container {
+    flex: 1;
+    min-width: 100px;
+}
+
+.header-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+
+.header-refresh-container {
+    flex-shrink: 0;
+    margin-left: 1rem;
+}
+
+.header-slots-row {
+    display: flex;
+    flex: 1 1 100%;
+    width: 100%;
+    justify-content: flex-end;
+}
+
+/* Replace the SLDS grid with CSS Grid */
+.header-slots-row .slds-grid {
+    display: grid !important;
+    grid-template-columns: 1fr; /* Single column = vertical stack */
+    gap: 0.25rem;
+    justify-items: end; /* Right-align each button */
+    width: auto;
+}
+
+/* On large screens, use horizontal layout */
+@media (min-width: 1400px) {
+    .header-slots-row {
+        flex: 0 1 auto;
+        width: auto;
+        margin-left: 1rem;
+    }
+    
+    .header-slots-row .slds-grid {
+        grid-template-columns: repeat(4, auto) !important; /* 4 columns = horizontal */
+        justify-items: center;
+    }
+}
+
+/* Add these styles to slotTest.css */
+
+/* Fixed header table container */
+.fixed-header-table {
+    height: 200px; /* Set a fixed height */
+    overflow: hidden; /* Prevent outer container scroll */
+    border: 1px solid #e5e5e5;
+    border-radius: 0.25rem;
+}
+
+/* Make the datatable fill the container with sticky header */
+.fixed-header-table lightning-datatable {
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+/* Force the table wrapper to be scrollable */
+.fixed-header-table lightning-datatable .slds-table_header-fixed_container {
+    height: 100% !important;
+    overflow-y: auto !important;
+}
+
+/* Ensure the table header is sticky */
+.fixed-header-table lightning-datatable table thead {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    background-color: #fafaf9 !important;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Ensure proper spacing for sticky header */
+.fixed-header-table lightning-datatable table thead th {
+    background-color: #fafaf9 !important;
+    border-bottom: 2px solid #e5e5e5 !important;
+    padding: 0.75rem !important;
+    font-weight: 600 !important;
+}
+
+/* Style the scrollable body */
+.fixed-header-table lightning-datatable table tbody {
+    background-color: white !important;
+}
+
+/* Ensure rows have proper spacing */
+.fixed-header-table lightning-datatable table tbody tr {
+    border-bottom: 1px solid #e5e5e5 !important;
+}
+
+/* Handle hover states properly */
+.fixed-header-table lightning-datatable table tbody tr:hover {
+    background-color: #f4f6f9 !important;
+}
+
+/* Remove the limited height constraint when using fixed headers */
+.fixed-header-table.limited-height-table {
+    max-height: none !important;
+    height: 200px !important; /* Use fixed height instead */
+}
+
+/* Alternative: Variable height based on content (max 200px) */
+.adaptive-header-table {
+    max-height: 200px;
+    overflow: hidden;
+    border: 1px solid #e5e5e5;
+    border-radius: 0.25rem;
+}
+
+.adaptive-header-table lightning-datatable {
+    max-height: 200px !important;
+    overflow-y: auto !important;
+}
+
+.adaptive-header-table lightning-datatable table thead {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    background-color: #fafaf9 !important;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1) !important;
+}

@@ -1,0 +1,470 @@
+<template>
+<!-- ===== RECORD CONTEXT TAB ===== -->
+    <lightning-input 
+        type={propInputs.recordId.type}
+        label={propInputs.recordId.label}
+        value={propInputs.recordId.value}
+        onblur={handleRecordIdChange}
+        data-key={propInputs.recordId.key}
+        field-level-help={propInputs.recordId.help}
+        required={propInputs.recordId.required}
+        class={propInputs.recordId.classes}
+        placeholder={recordIdPlaceholder}>
+    </lightning-input>
+        
+    <lightning-tabset>    
+        <!-- ===== GENERAL TAB ===== -->
+        <lightning-tab label="General">
+            
+            <lightning-select
+                name={propInputs.numberOfSlots.key}
+                label={propInputs.numberOfSlots.label}
+                value={propInputs.numberOfSlots.value}
+                options={propInputs.numberOfSlots.options}
+                onchange={handleNumberOfSlotsChange}
+                required={propInputs.numberOfSlots.required}
+                data-key={propInputs.numberOfSlots.key}
+                field-level-help={propInputs.numberOfSlots.help}
+                class={propInputs.numberOfSlots.classes}>
+            </lightning-select>
+
+            <lightning-input 
+                type={propInputs.relatedListIcon.type}
+                label={propInputs.relatedListIcon.label}
+                value={propInputs.relatedListIcon.value}
+                onblur={handleRelatedListIconChange}
+                data-key={propInputs.relatedListIcon.key}
+                field-level-help={propInputs.relatedListIcon.help}
+                required={propInputs.relatedListIcon.required}
+                class={propInputs.relatedListIcon.classes}>
+            </lightning-input>
+
+            <lightning-input 
+                type={propInputs.relatedListLabel.type}
+                label={propInputs.relatedListLabel.label}
+                value={propInputs.relatedListLabel.value}
+                onblur={handleRelatedListLabelChange}
+                data-key={propInputs.relatedListLabel.key}
+                field-level-help={propInputs.relatedListLabel.help}
+                required={propInputs.relatedListLabel.required}
+                class={propInputs.relatedListLabel.classes}>
+            </lightning-input>
+
+            <!-- Action Buttons Section (moved from Display Options) -->
+            <div class="slds-m-bottom_large slds-m-top_large">
+                <h3 class="slds-text-heading_small slds-m-bottom_small">Action Buttons</h3>
+
+                <lightning-input 
+                    type={propInputs.showViewMore.type}
+                    label={propInputs.showViewMore.label}
+                    checked={propInputs.showViewMore.value}
+                    onchange={handleShowViewMoreChange}
+                    data-key={propInputs.showViewMore.key}
+                    field-level-help={propInputs.showViewMore.help}
+                    required={propInputs.showViewMore.required}
+                    class={propInputs.showViewMore.classes}>
+                </lightning-input>
+
+                <lightning-input 
+                    type={propInputs.showViewAll.type}
+                    label={propInputs.showViewAll.label}
+                    checked={propInputs.showViewAll.value}
+                    onchange={handleShowViewAllChange}
+                    data-key={propInputs.showViewAll.key}
+                    field-level-help={propInputs.showViewAll.help}
+                    required={propInputs.showViewAll.required}
+                    class={propInputs.showViewAll.classes}>
+                </lightning-input>
+
+                <lightning-input 
+                    type={propInputs.viewAllUrl.type}
+                    label={propInputs.viewAllUrl.label}
+                    value={propInputs.viewAllUrl.value}
+                    onblur={handleViewAllUrlChange}
+                    data-key={propInputs.viewAllUrl.key}
+                    field-level-help={propInputs.viewAllUrl.help}
+                    required={propInputs.viewAllUrl.required}
+                    class={propInputs.viewAllUrl.classes}
+                    placeholder="/case/Case/My_Cases">
+                </lightning-input>
+            </div>
+
+            <!-- Record Linking Section (moved from Display Options) -->
+            <div class="slds-m-bottom_large">
+                <h3 class="slds-text-heading_small slds-m-bottom_small">Record Linking</h3>
+
+                <lightning-input 
+                    type={propInputs.recordPageUrl.type}
+                    label={propInputs.recordPageUrl.label}
+                    value={propInputs.recordPageUrl.value}
+                    onblur={handleRecordPageUrlChange}
+                    data-key={propInputs.recordPageUrl.key}
+                    field-level-help={propInputs.recordPageUrl.help}
+                    required={propInputs.recordPageUrl.required}
+                    class={propInputs.recordPageUrl.classes}
+                    placeholder="/contact/:recordId">
+                </lightning-input>
+
+                <lightning-input 
+                    type={propInputs.enableRecordLinking.type}
+                    label={propInputs.enableRecordLinking.label}
+                    checked={propInputs.enableRecordLinking.value}
+                    onchange={handleEnableRecordLinkingChange}
+                    data-key={propInputs.enableRecordLinking.key}
+                    field-level-help={propInputs.enableRecordLinking.help}
+                    required={propInputs.enableRecordLinking.required}
+                    class={propInputs.enableRecordLinking.classes}>
+                </lightning-input>
+            </div>
+
+        </lightning-tab>
+
+        <!-- ===== TABLE SETTINGS TAB (with Data Source moved here) ===== -->
+        <lightning-tab label="Table Settings">
+
+            <!-- Data Source Mode Toggle (moved from Data Source tab) -->
+            <div class="slds-m-bottom_large">
+                <h3 class="slds-text-heading_small slds-m-bottom_small">Data Source Selection</h3>
+                
+                <lightning-input 
+                    type="checkbox"
+                    label="Use Custom SOQL Query"
+                    checked={propInputs.useCustomQuery.value}
+                    onchange={handleUseCustomQueryChange}
+                    data-key={propInputs.useCustomQuery.key}
+                    field-level-help={propInputs.useCustomQuery.help}
+                    class={propInputs.useCustomQuery.classes}>
+                </lightning-input>
+            </div>
+
+            <!-- Related List API Mode Section (moved from Data Source tab) -->
+            <template if:true={showRelatedListSection}>
+                <div class="slds-m-bottom_large">
+                    <div class="slds-box slds-theme_success slds-m-bottom_medium">
+                        <h3 class="slds-text-heading_small slds-m-bottom_small">
+                            <lightning-icon 
+                                icon-name="utility:dash" 
+                                size="x-small" 
+                                class="slds-m-right_x-small slds-icon-text-success">
+                            </lightning-icon>
+                            Related List API Mode (Fast & Automatic)
+                        </h3>
+                        <p class="slds-text-body_small">
+                            Optimal performance using Salesforce's built-in Related List API. 
+                            Automatically detects relationships and handles field resolution.
+                        </p>
+                    </div>
+
+                    <lightning-input 
+                        type={propInputs.relatedListName.type}
+                        label={propInputs.relatedListName.label}
+                        value={propInputs.relatedListName.value}
+                        onblur={handleRelatedListNameChange}
+                        data-key={propInputs.relatedListName.key}
+                        field-level-help={propInputs.relatedListName.help}
+                        required={propInputs.relatedListName.required}
+                        class={propInputs.relatedListName.classes}
+                        placeholder="e.g., Contacts, Opportunities, Cases">
+                    </lightning-input>
+
+                    <lightning-input 
+                        type={propInputs.relationshipField.type}
+                        label={propInputs.relationshipField.label}
+                        value={propInputs.relationshipField.value}
+                        onblur={handleRelationshipFieldChange}
+                        data-key={propInputs.relationshipField.key}
+                        field-level-help={propInputs.relationshipField.help}
+                        required={propInputs.relationshipField.required}
+                        class={propInputs.relationshipField.classes}
+                        placeholder="e.g., AccountId (optional)">
+                    </lightning-input>
+
+                    <lightning-input 
+                        type={propInputs.enabledFields.type}
+                        label={propInputs.enabledFields.label}
+                        value={propInputs.enabledFields.value}
+                        onblur={handleEnabledFieldsChange}
+                        data-key={propInputs.enabledFields.key}
+                        field-level-help={propInputs.enabledFields.help}
+                        required={propInputs.enabledFields.required}
+                        class={propInputs.enabledFields.classes}
+                        placeholder="e.g., Name,Email,Phone">
+                    </lightning-input>
+
+                    <lightning-input 
+                        type={propInputs.fieldNames.type}
+                        label={propInputs.fieldNames.label}
+                        value={propInputs.fieldNames.value}
+                        onblur={handleFieldNamesChange}
+                        data-key={propInputs.fieldNames.key}
+                        field-level-help={propInputs.fieldNames.help}
+                        required={propInputs.fieldNames.required}
+                        class={propInputs.fieldNames.classes}
+                        placeholder="e.g., Asset Name,Product,Current Status">
+                    </lightning-input>
+                </div>
+            </template>
+
+            <!-- Custom SOQL Mode Section (moved from Data Source tab) -->
+            <template if:true={showSOQLSection}>
+                <div class="slds-m-bottom_large">
+                    <div class="slds-box slds-theme_warning slds-m-bottom_medium">
+                        <h3 class="slds-text-heading_small slds-m-bottom_small">
+                            <lightning-icon 
+                                icon-name="utility:apex" 
+                                size="x-small" 
+                                class="slds-m-right_x-small slds-icon-text-warning">
+                            </lightning-icon>
+                            Custom SOQL Mode (Advanced & Flexible)
+                        </h3>
+                        <p class="slds-text-body_small">
+                            Full SOQL control with custom WHERE clauses, relationship fields, and complex queries. 
+                            Perfect for advanced use cases requiring specific data filtering.
+                        </p>
+                    </div>
+
+                    <!-- SOQL Query Button -->
+                    <lightning-button 
+                        variant="brand" 
+                        label={propInputs.soqlQuery.buttonLabel}
+                        title={propInputs.soqlQuery.buttonLabel}
+                        onclick={handleSoqlQueryClick}
+                        class="slds-m-bottom_medium">
+                    </lightning-button>
+
+                    <!-- Display Fields (auto-populated from query parsing) -->
+                    <lightning-input 
+                        type={propInputs.displayFields.type}
+                        label={propInputs.displayFields.label}
+                        value={propInputs.displayFields.value}
+                        data-key={propInputs.displayFields.key}
+                        field-level-help={propInputs.displayFields.help}
+                        required={propInputs.displayFields.required}
+                        class={propInputs.displayFields.classes}
+                        readonly>
+                    </lightning-input>
+                </div>
+            </template>
+
+            <!-- Table Configuration Section -->
+            <div class="slds-m-bottom_large slds-m-top_large">
+                <h3 class="slds-text-heading_small slds-m-bottom_small">Table Display Settings</h3>
+
+                <lightning-input 
+                    type={propInputs.initialRecordsToLoad.type}
+                    label={propInputs.initialRecordsToLoad.label}
+                    value={propInputs.initialRecordsToLoad.value}
+                    onchange={handleInitialRecordsToLoadChange}
+                    data-key={propInputs.initialRecordsToLoad.key}
+                    field-level-help={propInputs.initialRecordsToLoad.help}
+                    required={propInputs.initialRecordsToLoad.required}
+                    class={propInputs.initialRecordsToLoad.classes}
+                    min="1"
+                    max="50">
+                </lightning-input>
+
+                <lightning-input 
+                    type={propInputs.defaultColumnWidth.type}
+                    label={propInputs.defaultColumnWidth.label}
+                    value={propInputs.defaultColumnWidth.value}
+                    onblur={handleDefaultColumnWidthChange}
+                    data-key={propInputs.defaultColumnWidth.key}
+                    field-level-help={propInputs.defaultColumnWidth.help}
+                    required={propInputs.defaultColumnWidth.required}
+                    class={propInputs.defaultColumnWidth.classes}
+                    min="80"
+                    max="800">
+                </lightning-input>
+
+                <lightning-input 
+                    type={propInputs.showRowNumberColumn.type}
+                    label={propInputs.showRowNumberColumn.label}
+                    checked={propInputs.showRowNumberColumn.value}
+                    onchange={handleShowRowNumberColumnChange}
+                    data-key={propInputs.showRowNumberColumn.key}
+                    field-level-help={propInputs.showRowNumberColumn.help}
+                    required={propInputs.showRowNumberColumn.required}
+                    class={propInputs.showRowNumberColumn.classes}>
+                </lightning-input>
+
+                <lightning-input 
+                    type={propInputs.resizeColumnDisabled.type}
+                    label={propInputs.resizeColumnDisabled.label}
+                    checked={propInputs.resizeColumnDisabled.value}
+                    onchange={handleResizeColumnDisabledChange}
+                    data-key={propInputs.resizeColumnDisabled.key}
+                    field-level-help={propInputs.resizeColumnDisabled.help}
+                    required={propInputs.resizeColumnDisabled.required}
+                    class={propInputs.resizeColumnDisabled.classes}>
+                </lightning-input>
+
+                <lightning-input 
+                    type={propInputs.columnSortingDisabled.type}
+                    label={propInputs.columnSortingDisabled.label}
+                    checked={propInputs.columnSortingDisabled.value}
+                    onchange={handleColumnSortingDisabledChange}
+                    data-key={propInputs.columnSortingDisabled.key}
+                    field-level-help={propInputs.columnSortingDisabled.help}
+                    required={propInputs.columnSortingDisabled.required}
+                    class={propInputs.columnSortingDisabled.classes}>
+                </lightning-input>
+
+                <lightning-input 
+                    type={propInputs.enableInfiniteLoading.type}
+                    label={propInputs.enableInfiniteLoading.label}
+                    checked={propInputs.enableInfiniteLoading.value}
+                    onchange={handleEnableInfiniteLoadingChange}
+                    data-key={propInputs.enableInfiniteLoading.key}
+                    field-level-help={propInputs.enableInfiniteLoading.help}
+                    required={propInputs.enableInfiniteLoading.required}
+                    class={propInputs.enableInfiniteLoading.classes}>
+                </lightning-input>
+
+                <lightning-input 
+                    type={propInputs.fixedTableHeader.type}
+                    label={propInputs.fixedTableHeader.label}
+                    checked={propInputs.fixedTableHeader.value}
+                    onchange={handleFixedTableHeaderChange}
+                    data-key={propInputs.fixedTableHeader.key}
+                    field-level-help={propInputs.fixedTableHeader.help}
+                    required={propInputs.fixedTableHeader.required}
+                    class={propInputs.fixedTableHeader.classes}>
+                </lightning-input>
+            </div>
+
+        </lightning-tab>
+    </lightning-tabset>
+
+    <!-- ===== SOQL QUERY MODAL ===== -->
+    <template if:true={showSqlModal}>
+        <section role="dialog" tabindex="-1" class={modalClass} aria-modal="true">
+            <div class="slds-modal__container">
+                <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick={handleCloseSqlModal}>
+                    <lightning-icon
+                        icon-name="utility:close"
+                        size="small"
+                        alternative-text="Close">
+                    </lightning-icon>
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+                <div class="slds-modal__header">
+                    <h2 class="slds-text-heading_medium">
+                        <lightning-icon 
+                            icon-name="utility:apex" 
+                            size="small" 
+                            class="slds-m-right_small">
+                        </lightning-icon>
+                        {propInputs.soqlQuery.label}
+                    </h2>
+                </div>
+                <div class="slds-modal__content slds-p-around_medium">
+                    
+                    <!-- SOQL Examples -->
+                    <div class="slds-m-bottom_medium">
+                        <p><strong>Example Queries:</strong></p>
+                        <div class="slds-box slds-theme_shade slds-text-longform">
+                            <h4 class="slds-text-heading_small">Basic Query:</h4>
+                            <code>
+                                SELECT Id, Name, Email FROM Contact<br/>
+                                WHERE AccountId = '$recordId'
+                            </code>
+                            
+                            <h4 class="slds-text-heading_small slds-m-top_small">Advanced Query with Relationships:</h4>
+                            <code>
+                                SELECT Id, Name, Email, Account.Name, Account.Type<br/>
+                                FROM Contact<br/>
+                                WHERE AccountId = '$recordId' AND IsActive__c = true<br/>
+                                ORDER BY LastName
+                            </code>
+                        </div>
+                    </div>
+
+                    <!-- Tips -->
+                    <div class="slds-m-bottom_medium">
+                        <p><strong>Tips:</strong></p>
+                        <ul class="slds-list_dotted">
+                            <li><strong>$recordId</strong> - Current record ID</li>
+                            <li><strong>$userId</strong> - Current user ID</li>
+                            <li><strong>Relationships</strong> - Use dot notation (e.g., Account.Name)</li>
+                            <li><strong>Filtering</strong> - Add WHERE clauses for specific data</li>
+                            <li><strong>Performance</strong> - Queries are limited to 50 records automatically</li>
+                        </ul>
+                    </div>
+
+                    <!-- SOQL Query Input -->
+                    <lightning-textarea
+                        value={propInputs.soqlQuery.value}
+                        label="SOQL Query"
+                        data-key={propInputs.soqlQuery.key}
+                        class="customTextArea"
+                        rows="8"
+                        field-level-help="Enter your SOQL query to retrieve the related records">
+                    </lightning-textarea>
+
+                    <!-- Parse Fields Button -->
+                    <div class="slds-m-top_medium slds-text-align_center">
+                        <lightning-button
+                            variant="outline-brand"
+                            label="Parse Fields from Query"
+                            title="Parse Fields from Query"
+                            onclick={handleParseFields}
+                            icon-name="utility:refresh"
+                            class="slds-m-bottom_medium">
+                        </lightning-button>
+                    </div>
+
+                    <!-- Field Selection -->
+                    <template if:true={hasAvailableFields}>
+                        <div class="slds-m-top_medium">
+                            <h3 class="slds-text-heading_small slds-m-bottom_small">Select and Order Display Fields</h3>
+                            <lightning-dual-listbox
+                                name="fieldSelection"
+                                label="Field Selection"
+                                source-label="Available Fields"
+                                selected-label="Selected Fields (display order)"
+                                options={availableFields}
+                                value={selectedFields}
+                                onchange={handleFieldOrderChange}
+                                size="8"
+                                min="1"
+                                class="slds-m-bottom_medium">
+                            </lightning-dual-listbox>
+                            <div class="slds-text-body_small slds-text-color_weak">
+                                Order determines column order in the table. The first field will be used for record linking if enabled.
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Message when no fields parsed yet -->
+                    <template if:false={hasAvailableFields}>
+                        <div class="slds-m-top_medium">
+                            <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" role="alert">
+                                <span class="slds-assistive-text">info</span>
+                                <lightning-icon 
+                                    icon-name="utility:info" 
+                                    size="x-small" 
+                                    alternative-text="info"
+                                    class="slds-m-right_x-small">
+                                </lightning-icon>
+                                <h2>
+                                    Click "Parse Fields from Query" to load field selection options.
+                                </h2>
+                            </div>
+                        </div>
+                    </template>
+
+                </div>
+                <div class="slds-modal__footer">
+                    <button class="slds-button slds-button_brand" onclick={handleSaveSoqlQuery}>Save Query</button>
+                    <button class="slds-button slds-button_neutral" onclick={handleCloseSqlModal}>Cancel</button>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- Modal Backdrop -->
+    <template if:true={displayBackdrop}>
+        <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+    </template>
+
+</template>
