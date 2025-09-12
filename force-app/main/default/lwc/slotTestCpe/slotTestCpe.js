@@ -22,7 +22,6 @@ export default class SlotTestCpe extends LightningElement {
             doSetDefaultValue: true,
             classes: defaultCSSClasses
         },
-        // ===== UI CONFIGURATION =====
         numberOfSlots: {
             key: 'numberOfSlots',
             label: 'Number of Action Slots',
@@ -96,8 +95,6 @@ export default class SlotTestCpe extends LightningElement {
             doSetDefaultValue: true,
             classes: defaultCSSClasses
         },
-
-        // ===== DATA SOURCE TOGGLE =====
         useCustomQuery: {
             key: 'useCustomQuery',
             label: 'Data Source Mode',
@@ -105,7 +102,7 @@ export default class SlotTestCpe extends LightningElement {
             help: 'Choose your data source: Related List API (fast, automatic) or Custom SOQL (flexible, advanced)',
             required: false,
             valuePath: 'useCustomQuery',
-            value: false, // Default to ARL mode
+            value: false,
             doSetDefaultValue: true,
             classes: defaultCSSClasses,
             options: [
@@ -113,8 +110,6 @@ export default class SlotTestCpe extends LightningElement {
                 { label: 'Custom SOQL', value: true }
             ]
         },
-
-        // ===== RELATED LIST API PROPERTIES =====
         relatedListName: {
             key: 'relatedListName',
             label: 'Related List Name',
@@ -159,8 +154,6 @@ export default class SlotTestCpe extends LightningElement {
             doSetDefaultValue: true,
             classes: defaultCSSClasses
         },
-
-        // ===== SOQL PROPERTIES =====
         soqlQuery: { 
             key: 'soqlQuery',
             label: 'SOQL Query',
@@ -184,8 +177,6 @@ export default class SlotTestCpe extends LightningElement {
             doSetDefaultValue: true,
             classes: defaultCSSClasses
         },
-
-        // ===== RECORD LINKING =====
         recordPageUrl: {
             key: 'recordPageUrl',
             label: 'Record Detail Page URL',
@@ -208,8 +199,6 @@ export default class SlotTestCpe extends LightningElement {
             doSetDefaultValue: true,
             classes: defaultCSSClasses
         },
-
-        // ===== TABLE CONFIGURATION =====
         initialRecordsToLoad: {
             key: 'initialRecordsToLoad',
             label: 'Initial Records to Load',
@@ -286,11 +275,20 @@ export default class SlotTestCpe extends LightningElement {
             value: false,
             doSetDefaultValue: true,
             classes: defaultCSSClasses
+        },
+        showDebugInfo: {
+            key: 'showDebugInfo',
+            label: 'Show Debug Information',
+            type: 'checkbox',
+            help: 'Display detailed configuration and performance information below the component. For development and troubleshooting only.',
+            required: false,
+            valuePath: 'showDebugInfo',
+            value: false,
+            doSetDefaultValue: true,
+            classes: defaultCSSClasses
         }
     };
 
-    // ===== COMPUTED GETTERS =====
-    
     get recordIdPlaceholder() {
         return this.propInputs.recordId.value === '{!recordId}' || !this.propInputs.recordId.value ? 
                'e.g., 0031234567890ABC or {!recordId}' : '';
@@ -339,7 +337,6 @@ export default class SlotTestCpe extends LightningElement {
                 if (this.propInputs[key].value !== tmpVal) {
                     this.propInputs[key].value = tmpVal;
                     
-                    // Update button labels for modal fields
                     if (key === 'soqlQuery') {
                         if (!this.isStringEmpty(this.propInputs[key].value)) {
                             this.propInputs[key].buttonLabel = 'Edit Query';
@@ -349,7 +346,6 @@ export default class SlotTestCpe extends LightningElement {
             }
         }
 
-        // Initialize dual listbox for SOQL mode
         if (!this.fieldsInitialized || !valuetmp.soqlQuery || valuetmp.soqlQuery !== this.lastInitializedQuery) {
             this.initializeDualListbox(valuetmp);
             this.lastInitializedQuery = valuetmp.soqlQuery;
@@ -365,8 +361,6 @@ export default class SlotTestCpe extends LightningElement {
                 {detail: {value: value}}));
         }
     }
-
-    // ===== COMPUTED PROPERTIES =====
 
     get modalClass() {
         return 'slds-modal slds-modal_large slds-fade-in-open';
@@ -388,8 +382,6 @@ export default class SlotTestCpe extends LightningElement {
         return this.propInputs.useCustomQuery.value;
     }
 
-    // ===== INITIALIZATION =====
-
     initializeDualListbox(config) {
         const soqlQuery = config.soqlQuery || '';
         const displayFields = config.displayFields || '';
@@ -400,46 +392,34 @@ export default class SlotTestCpe extends LightningElement {
         this.fieldsInitialized = this.availableFields.length > 0;
     }
 
-   parseFieldsFromSoql(soqlQuery) {
-        console.log('Parsing SOQL:', soqlQuery);
+    parseFieldsFromSoql(soqlQuery) {
         if (!soqlQuery) {
-            console.log('No SOQL query provided');
             return [];
         }
         
         try {
             const normalizedQuery = soqlQuery.replace(/\s+/g, ' ').trim();
-            console.log('Normalized query:', normalizedQuery);
-            
             const selectMatch = normalizedQuery.match(/SELECT\s+(.*?)\s+FROM/i);
-            console.log('Select match:', selectMatch);
             
             if (!selectMatch) {
-                console.log('No SELECT match found');
                 return [];
             }
             
             const fieldsString = selectMatch[1];
-            console.log('Fields string:', fieldsString);
-            
             const fields = fieldsString.split(',').map(field => {
                 const cleanField = field.trim();
-                console.log('Processing field:', cleanField);
                 return {
                     label: cleanField,
                     value: cleanField
                 };
             });
             
-            console.log('Parsed fields:', fields);
             return fields;
         } catch (e) {
             console.error('Error parsing SOQL:', e);
             return [];
         }
     }
-
-    // ===== EVENT HANDLERS =====
 
     handleRecordIdChange(e) {
         try {
@@ -460,11 +440,9 @@ export default class SlotTestCpe extends LightningElement {
         }
     }
 
-    // UI Configuration handlers
     handleNumberOfSlotsChange(e) {
         try {
             const newValue = this.getEventValue(e);
-            console.log('Number of slots change handler called with:', newValue);
             this.propInputs.numberOfSlots.value = newValue;
             let tmpvalueObj = this.getValueObj();
             tmpvalueObj.numberOfSlots = this.propInputs.numberOfSlots.value;
@@ -558,16 +536,12 @@ export default class SlotTestCpe extends LightningElement {
         }
     }
 
-    // Data Source Mode Toggle
     handleUseCustomQueryChange(e) {
         try {
             const newValue = this.getEventValue(e, true);
-            console.log('Data source mode changed to:', newValue ? 'Custom SOQL' : 'Related List API');
-            
             this.propInputs.useCustomQuery.value = newValue;
             let tmpvalueObj = this.getValueObj();
             tmpvalueObj.useCustomQuery = this.propInputs.useCustomQuery.value;
-            
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
@@ -575,7 +549,6 @@ export default class SlotTestCpe extends LightningElement {
         }
     }
 
-    // Related List API handlers
     handleRelatedListNameChange(e) {
         try {
             const inputElement = this.template.querySelector(`[data-key="${this.propInputs.relatedListName.key}"]`);
@@ -652,10 +625,8 @@ export default class SlotTestCpe extends LightningElement {
         }
     }
 
-    // SOQL Modal handlers
     handleSoqlQueryClick(e) {
         try {
-            console.log('SOQL query click handler called');
             this.showSqlModal = true;
         } catch (error) {
             console.error('Error in handleSoqlQueryClick:', error);
@@ -666,12 +637,9 @@ export default class SlotTestCpe extends LightningElement {
         try {
             let tmpEl = this.template.querySelector('[data-key="' + this.propInputs.soqlQuery.key + '"]');
             if (tmpEl && tmpEl.value) {
-                console.log('Parsing fields from current textarea value:', tmpEl.value);
                 this.availableFields = this.parseFieldsFromSoql(tmpEl.value);
                 this.fieldsInitialized = true;
-                console.log('Parsed fields:', this.availableFields);
             } else {
-                console.log('No query found in textarea');
                 this.availableFields = [];
                 this.fieldsInitialized = false;
             }
@@ -682,7 +650,6 @@ export default class SlotTestCpe extends LightningElement {
 
     handleCloseSqlModal(e) {
         try {
-            console.log('Close SQL modal handler called');
             this.showSqlModal = false;
         } catch (error) {
             console.error('Error in handleCloseSqlModal:', error);
@@ -691,7 +658,6 @@ export default class SlotTestCpe extends LightningElement {
 
     handleSaveSoqlQuery(e) {
         try {
-            console.log('Save SOQL query handler called');
             let tmpEl = this.template.querySelector('[data-key="' + this.propInputs.soqlQuery.key + '"]');
             
             this.propInputs.soqlQuery.value = tmpEl ? tmpEl.value : '';
@@ -708,22 +674,12 @@ export default class SlotTestCpe extends LightningElement {
                 this.fieldsInitialized = newAvailableFields.length > 0;
             }
             
-            // Auto-populate displayFields if no fields are selected
             if (this.selectedFields.length === 0 && this.availableFields.length > 0) {
-                console.log('Auto-selecting all available fields since none were selected');
                 this.selectedFields = this.availableFields.map(field => field.value);
             }
             
-            // Update displayFields from selectedFields
             this.propInputs.displayFields.value = this.selectedFields.join(', ');
             tmpvalueObj.displayFields = this.propInputs.displayFields.value;
-            
-            console.log('Final configuration:', {
-                soqlQuery: tmpvalueObj.soqlQuery,
-                displayFields: tmpvalueObj.displayFields,
-                selectedFields: this.selectedFields,
-                availableFields: this.availableFields.length
-            });
             
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
@@ -737,7 +693,6 @@ export default class SlotTestCpe extends LightningElement {
     handleFieldOrderChange(e) {
         try {
             const newValue = this.getEventValue(e);
-            console.log('Field order change handler called with:', newValue);
             this.selectedFields = Array.isArray(newValue) ? newValue : [];
             
             this.propInputs.displayFields.value = this.selectedFields.join(', ');
@@ -755,7 +710,6 @@ export default class SlotTestCpe extends LightningElement {
         }
     }
 
-    // Record linking handlers
     handleRecordPageUrlChange(e) {
         try {
             const inputElement = this.template.querySelector(`[data-key="${this.propInputs.recordPageUrl.key}"]`);
@@ -792,7 +746,6 @@ export default class SlotTestCpe extends LightningElement {
         }
     }
 
-    // Table configuration handlers
     handleInitialRecordsToLoadChange(e) {
         try {
             const newValue = parseInt(this.getEventValue(e)) || 6;
@@ -891,7 +844,18 @@ export default class SlotTestCpe extends LightningElement {
         }
     }
 
-    // ===== UTILITY METHODS =====
+    handleShowDebugInfoChange(e) {
+        try {
+            const newValue = this.getEventValue(e, true);
+            this.propInputs.showDebugInfo.value = newValue;
+            let tmpvalueObj = this.getValueObj();
+            tmpvalueObj.showDebugInfo = this.propInputs.showDebugInfo.value;
+            this.dispatchEvent(new CustomEvent("valuechange", 
+                {detail: {value: JSON.stringify(tmpvalueObj)}}));
+        } catch (error) {
+            console.error('Error in handleShowDebugInfoChange:', error);
+        }
+    }
 
     getValueObj() {
         try {
@@ -903,12 +867,10 @@ export default class SlotTestCpe extends LightningElement {
 
     getEventValue(event, isCheckbox = false) {
         if (!event) {
-            console.warn('Event is null or undefined');
             return isCheckbox ? false : '';
         }
         
         if (!event.detail) {
-            console.warn('Event detail is null or undefined');
             return isCheckbox ? false : '';
         }
         
@@ -919,7 +881,6 @@ export default class SlotTestCpe extends LightningElement {
         }
     }
 
-    // Utility methods
     isObjectEmpty(param) {
         return (param === undefined || param === null);
     }
@@ -937,7 +898,7 @@ export default class SlotTestCpe extends LightningElement {
 
     getObjPropValue(data, keys) {
         if(typeof keys === 'string') {
-            keys = keys.split('.')
+            keys = keys.split('.');
         }
         
         let key = keys.shift();
@@ -960,7 +921,7 @@ export default class SlotTestCpe extends LightningElement {
         let len = pList.length;
         for(let i = 0; i < len-1; i++) {
             let elem = pList[i];
-            if( !schema[elem] ) schema[elem] = {}
+            if( !schema[elem] ) schema[elem] = {};
             schema = schema[elem];
         }
 

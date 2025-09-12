@@ -7,7 +7,7 @@
                     <template if:true={hasIcon}>
                         <lightning-icon 
                             icon-name={relatedListIcon} 
-                            size="small" 
+                            size="medium" 
                             alternative-text="Related List Icon"
                             class="slds-m-right_x-small">
                         </lightning-icon>
@@ -94,53 +94,10 @@
             </div>
         </template>
 
-        <!-- Empty State with Mode-Specific Messages -->
+        <!-- Empty State -->
         <template if:true={showEmptyState}>
             <div class="no-data-container">
-                <lightning-icon 
-                    icon-name="utility:info" 
-                    size="medium" 
-                    class="slds-m-bottom_small">
-                </lightning-icon>
-                <h4 class="slds-text-heading_small">No Data Available</h4>
-                
-                <!-- Custom SOQL Mode Empty State -->
-                <template if:true={useCustomQuery}>
-                    <p class="slds-m-top_x-small">
-                        <template if:false={soqlQuery}>
-                            No SOQL query configured. Use the component properties to configure your custom SOQL query.
-                        </template>
-                        <template if:true={soqlQuery}>
-                            Your SOQL query returned no results.
-                        </template>
-                    </p>
-                    <p class="slds-m-top_x-small slds-text-body_small">
-                        <strong>Mode:</strong> Custom SOQL Query
-                    </p>
-                </template>
-                
-                <!-- Related List API Mode Empty State -->
-                <template if:false={useCustomQuery}>
-                    <p class="slds-m-top_x-small">
-                        <template if:false={relatedListName}>
-                            No related list configured. Use the component properties to set the Related List Name.
-                        </template>
-                        <template if:true={relatedListName}>
-                            <template if:false={detectedObjectType}>
-                                Could not detect object type from record ID.
-                            </template>
-                            <template if:true={detectedObjectType}>
-                                No records found for the "{relatedListName}" related list.
-                            </template>
-                        </template>
-                    </p>
-                    <p class="slds-m-top_x-small slds-text-body_small">
-                        <strong>Mode:</strong> Related List API
-                        <template if:true={detectedObjectType}>
-                            | <strong>Object:</strong> {detectedObjectType}
-                        </template>
-                    </p>
-                </template>
+                <p>No records available.</p>
             </div>
         </template>
 

@@ -117,6 +117,22 @@
                 </lightning-input>
             </div>
 
+            <!-- Debug Configuration Section -->
+            <div class="slds-m-bottom_large slds-m-top_large">
+                <h3 class="slds-text-heading_small slds-m-bottom_small">Developer Options</h3>
+
+                <lightning-input 
+                    type={propInputs.showDebugInfo.type}
+                    label={propInputs.showDebugInfo.label}
+                    checked={propInputs.showDebugInfo.value}
+                    onchange={handleShowDebugInfoChange}
+                    data-key={propInputs.showDebugInfo.key}
+                    field-level-help={propInputs.showDebugInfo.help}
+                    required={propInputs.showDebugInfo.required}
+                    class={propInputs.showDebugInfo.classes}>
+                </lightning-input>
+            </div>
+
         </lightning-tab>
 
         <!-- ===== TABLE SETTINGS TAB (with Data Source moved here) ===== -->

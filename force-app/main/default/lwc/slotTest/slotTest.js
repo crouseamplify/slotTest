@@ -40,13 +40,38 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     isInitialized = false;
     lastLoadTime = 0;
     
+    // ===== UTILITY METHODS FOR DEBUGGING =====
+    
+    debugLog(message, ...args) {
+        if (this.showDebugInfo) {
+            console.log(`[SlotTest Debug] ${message}`, ...args);
+        }
+    }
+    
+    debugWarn(message, ...args) {
+        if (this.showDebugInfo) {
+            console.warn(`[SlotTest Debug] ${message}`, ...args);
+        }
+    }
+    
+    debugError(message, ...args) {
+        if (this.showDebugInfo) {
+            console.error(`[SlotTest Debug] ${message}`, ...args);
+        }
+    }
+    
+    // Always log errors regardless of debug mode
+    logError(message, ...args) {
+        console.error(`[SlotTest Error] ${message}`, ...args);
+    }
+    
     // ===== COMPUTED CONFIGURATION PROPERTIES =====
     
     get configObj() {
         try {
             return JSON.parse(this.configJSONString);
         } catch (e) {
-            console.error('Invalid JSON in configJSONString:', e);
+            this.logError('Invalid JSON in configJSONString:', e);
             return {};
         }
     }
@@ -59,7 +84,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             configuredRecordId.trim() !== '' &&
             configuredRecordId !== '{!recordId}' && 
             configuredRecordId !== 'undefined') {
-            console.log('Using configured record ID:', configuredRecordId);
+            this.debugLog('Using configured record ID:', configuredRecordId);
             return configuredRecordId;
         }
         
@@ -68,11 +93,11 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             this.recordId !== '{!recordId}' && 
             this.recordId !== 'undefined' && 
             this.recordId.trim() !== '') {
-            console.log('Using Experience Cloud record ID:', this.recordId);
+            this.debugLog('Using Experience Cloud record ID:', this.recordId);
             return this.recordId;
         }
         
-        console.log('No valid record ID available');
+        this.debugLog('No valid record ID available');
         return null;
     }
 
@@ -144,7 +169,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         
         // If we have a custom name for this index, use it
         if (customNames.length > index) {
-            console.log(`Using custom name for field ${index}: "${customNames[index]}" instead of "${fieldInfo.label}"`);
+            this.debugLog(`Using custom name for field ${index}: "${customNames[index]}" instead of "${fieldInfo.label}"`);
             return customNames[index];
         }
         
@@ -328,13 +353,13 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     // Validation
     get hasValidConfiguration() {
         if (this.useCustomQuery) {
-            // SOQL mode validation (unchanged)
+            // SOQL mode validation
             const hasQuery = !!(this.soqlQuery && this.soqlQuery.trim() !== '');
             const usesRecordIdVariable = this.soqlQuery && this.soqlQuery.includes('$recordId');
             const hasRecordId = !!(this.currentRecordId);
             const recordIdValid = !usesRecordIdVariable || hasRecordId;
             
-            console.log('SOQL Validation:', {
+            this.debugLog('SOQL Validation:', {
                 hasQuery,
                 hasRecordId,
                 usesRecordIdVariable,
@@ -344,12 +369,12 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             
             return hasQuery && recordIdValid;
         } else {
-            // ARL mode validation - enabledFields is recommended but not strictly required
+            // ARL mode validation
             const hasRelatedListName = !!(this.relatedListName);
             const hasRecordId = !!(this.currentRecordId);
             const hasDetectedObjectType = !!(this.detectedObjectType);
             
-            console.log('ARL Validation:', {
+            this.debugLog('ARL Validation:', {
                 hasRelatedListName,
                 hasRecordId,
                 hasDetectedObjectType,
@@ -373,27 +398,29 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     // ===== DEBUG METHODS =====
     
     debugConfiguration() {
-        console.log('=== SlotTest Configuration Debug ===');
-        console.log('useCustomQuery:', this.useCustomQuery);
-        console.log('soqlQuery:', this.soqlQuery);
-        console.log('displayFields:', this.displayFields);
-        console.log('configured recordId:', this.configObj.recordId);
-        console.log('API recordId (from Experience Cloud):', this.recordId);
-        console.log('currentRecordId (final resolved):', this.currentRecordId);
-        console.log('detectedObjectType:', this.detectedObjectType);
-        console.log('hasValidConfiguration:', this.hasValidConfiguration);
-        console.log('shouldReloadData:', this.shouldReloadData);
-        console.log('dataSignature:', this.dataSignature);
-        console.log('lastDataSignature:', this.lastDataSignature);
-        console.log('configJSONString:', this.configJSONString);
-        console.log('====================================');
+        if (!this.showDebugInfo) return;
+        
+        this.debugLog('=== SlotTest Configuration Debug ===');
+        this.debugLog('useCustomQuery:', this.useCustomQuery);
+        this.debugLog('soqlQuery:', this.soqlQuery);
+        this.debugLog('displayFields:', this.displayFields);
+        this.debugLog('configured recordId:', this.configObj.recordId);
+        this.debugLog('API recordId (from Experience Cloud):', this.recordId);
+        this.debugLog('currentRecordId (final resolved):', this.currentRecordId);
+        this.debugLog('detectedObjectType:', this.detectedObjectType);
+        this.debugLog('hasValidConfiguration:', this.hasValidConfiguration);
+        this.debugLog('shouldReloadData:', this.shouldReloadData);
+        this.debugLog('dataSignature:', this.dataSignature);
+        this.debugLog('lastDataSignature:', this.lastDataSignature);
+        this.debugLog('configJSONString:', this.configJSONString);
+        this.debugLog('====================================');
     }
     
     // ===== LIFECYCLE HOOKS =====
     
     connectedCallback() {
-        console.log(`SlotTest connected with CPE integration - Mode: ${this.dataSourceMode}`);
-        console.log('Configuration:', this.configObj);
+        this.debugLog(`SlotTest connected with CPE integration - Mode: ${this.dataSourceMode}`);
+        this.debugLog('Configuration:', this.configObj);
         this.isInitialized = true;
         this.detectObjectTypeAndLoadData();
     }
@@ -405,12 +432,12 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         
         // Smart change detection - only reload what's necessary
         if (this.shouldReloadData) {
-            console.log('Data signature changed, reloading data');
-            console.log('Previous signature:', this.lastDataSignature);
-            console.log('Current signature:', this.dataSignature);
+            this.debugLog('Data signature changed, reloading data');
+            this.debugLog('Previous signature:', this.lastDataSignature);
+            this.debugLog('Current signature:', this.dataSignature);
             this.loadData();
         } else if (this.shouldRebuildColumns && this.hasData) {
-            console.log('UI signature changed, rebuilding columns only');
+            this.debugLog('UI signature changed, rebuilding columns only');
             this.rebuildColumnsOnly();
         }
     }
@@ -418,17 +445,17 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     // ===== DATA LOADING ORCHESTRATION =====
     
     async detectObjectTypeAndLoadData() {
-        console.log('detectObjectTypeAndLoadData called with recordId:', this.currentRecordId);
+        this.debugLog('detectObjectTypeAndLoadData called with recordId:', this.currentRecordId);
         
         // If we have a SOQL query that doesn't use $recordId, skip recordId validation
         if (this.useCustomQuery && this.soqlQuery && !this.soqlQuery.includes('$recordId')) {
-            console.log('SOQL query does not use $recordId, proceeding without record context');
+            this.debugLog('SOQL query does not use $recordId, proceeding without record context');
             this.loadData();
             return;
         }
         
         if (!this.currentRecordId) {
-            console.log('No valid record ID for processing');
+            this.debugLog('No valid record ID for processing');
             this.clearData();
             return;
         }
@@ -436,7 +463,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         try {
             // Always detect object type (needed for both modes)
             this.detectedObjectType = await getObjectTypeFromRecordId({ recordId: this.currentRecordId });
-            console.log('Detected object type:', this.detectedObjectType);
+            this.debugLog('Detected object type:', this.detectedObjectType);
             
             if (this.detectedObjectType) {
                 // Force a signature update to trigger reload
@@ -446,7 +473,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
                 this.error = 'Could not determine object type from record ID';
             }
         } catch (error) {
-            console.error('Error detecting object type:', error);
+            this.logError('Error detecting object type:', error);
             this.error = 'Could not determine object type from record ID';
         }
     }
@@ -456,13 +483,13 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         this.debugConfiguration();
         
         if (!this.hasValidConfiguration) {
-            console.log(`Invalid configuration for ${this.dataSourceMode} mode, skipping data load`);
+            this.debugLog(`Invalid configuration for ${this.dataSourceMode} mode, skipping data load`);
             this.clearData();
             return;
         }
         
         const startTime = performance.now();
-        console.log(`Loading data using ${this.dataSourceMode} mode`);
+        this.debugLog(`Loading data using ${this.dataSourceMode} mode`);
         
         this.isLoading = true;
         this.error = null;
@@ -481,11 +508,11 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             
             const endTime = performance.now();
             this.lastLoadTime = Math.round(endTime - startTime);
-            console.log(`Data loading (${this.dataSourceMode}) took ${this.lastLoadTime}ms`);
-            console.log(`Loaded ${this.allRecords.length} records successfully`);
+            this.debugLog(`Data loading (${this.dataSourceMode}) took ${this.lastLoadTime}ms`);
+            this.debugLog(`Loaded ${this.allRecords.length} records successfully`);
             
         } catch (error) {
-            console.error(`Error loading data in ${this.dataSourceMode} mode:`, error);
+            this.logError(`Error loading data in ${this.dataSourceMode} mode:`, error);
             this.error = error.body?.message || error.message || 'Unknown error occurred';
             this.clearData();
         } finally {
@@ -495,7 +522,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     
     // Fast column rebuild for UI-only changes (no data reload)
     async rebuildColumnsOnly() {
-        console.log('Rebuilding columns only (no data reload)');
+        this.debugLog('Rebuilding columns only (no data reload)');
         
         if (!this.hasData || this.allRecords.length === 0) {
             return;
@@ -515,7 +542,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             } else {
                 // For ARL mode, we'd need to call the API again
                 // For now, just reprocess existing records
-                console.log('ARL column rebuild requires data reload');
+                this.debugLog('ARL column rebuild requires data reload');
                 this.loadData();
                 return;
             }
@@ -528,7 +555,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             this.lastUISignature = this.uiSignature;
             
         } catch (error) {
-            console.error('Error rebuilding columns:', error);
+            this.logError('Error rebuilding columns:', error);
             // Fall back to full data reload
             this.loadData();
         }
@@ -558,13 +585,13 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     // ===== ARL MODE DATA LOADING =====
     
     async loadDataWithARL() {
-        console.log('Using Related List API data loading method');
+        this.debugLog('Using Related List API data loading method');
         
         if (!this.relatedListName || !this.detectedObjectType) {
             throw new Error('Related List Name and Object Type are required for ARL mode');
         }
         
-        console.log('ARL Parameters:', {
+        this.debugLog('ARL Parameters:', {
             objectApiName: this.detectedObjectType,
             relatedListName: this.relatedListName,
             recordId: this.currentRecordId,
@@ -580,7 +607,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             relationshipField: this.relationshipField || ''
         });
         
-        console.log('ARL Response:', response);
+        this.debugLog('ARL Response:', response);
         
         if (response?.fields) {
             this.columns = this.buildColumnsFromARL(response.fields);
@@ -589,7 +616,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             this.updateDisplayedRecords();
             this.hasData = this.allRecords.length > 0;
             
-            console.log(`ARL Success: ${this.columns.length} columns, ${this.allRecords.length} records`);
+            this.debugLog(`ARL Success: ${this.columns.length} columns, ${this.allRecords.length} records`);
         } else {
             throw new Error('No field information returned from Related List API');
         }
@@ -665,10 +692,10 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
                 // Extract the value from the nested relationship
                 if (record[relationshipName] && record[relationshipName][fieldName] !== undefined) {
                     record[flattenedFieldName] = record[relationshipName][fieldName];
-                    console.log(`Flattened ARL field ${key} -> ${flattenedFieldName}: ${record[flattenedFieldName]}`);
+                    this.debugLog(`Flattened ARL field ${key} -> ${flattenedFieldName}: ${record[flattenedFieldName]}`);
                 } else {
                     record[flattenedFieldName] = null;
-                    console.log(`Flattened ARL field ${key} -> ${flattenedFieldName}: null (no data)`);
+                    this.debugLog(`Flattened ARL field ${key} -> ${flattenedFieldName}: null (no data)`);
                 }
             }
         });
@@ -677,40 +704,40 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     // ===== SOQL MODE DATA LOADING =====
     
     async loadDataWithSOQL() {
-        console.log('Using SOQL data loading method');
-        console.log('SOQL Query:', this.soqlQuery);
-        console.log('Display Fields:', this.displayFields);
+        this.debugLog('Using SOQL data loading method');
+        this.debugLog('SOQL Query:', this.soqlQuery);
+        this.debugLog('Display Fields:', this.displayFields);
         
         const [fieldInfos, queryResult] = await Promise.all([
             this.getFieldInfos(),
             this.executeQuery()
         ]);
         
-        console.log('Field Infos received:', fieldInfos);
-        console.log('Query Result received:', queryResult);
+        this.debugLog('Field Infos received:', fieldInfos);
+        this.debugLog('Query Result received:', queryResult);
         
         this.columns = this.buildColumnsFromSOQL(fieldInfos);
         this.allRecords = this.flattenRecords(queryResult.records || []);
         this.currentOffset = 0;
         this.updateDisplayedRecords();
         
-        console.log('SOQL data loading completed');
-        console.log('Columns:', this.columns);
-        console.log('Records:', this.allRecords);
+        this.debugLog('SOQL data loading completed');
+        this.debugLog('Columns:', this.columns);
+        this.debugLog('Records:', this.allRecords);
     }
     
-    // FIXED: Enhanced getFieldInfos with better error handling and field parsing
+    // Enhanced getFieldInfos with better error handling and field parsing
     async getFieldInfos() {
         // If displayFields is empty, parse it from the query
         let fieldsToUse = this.displayFields;
         
         if (!fieldsToUse || fieldsToUse.trim() === '') {
-            console.log('displayFields is empty, parsing from SOQL query');
+            this.debugLog('displayFields is empty, parsing from SOQL query');
             fieldsToUse = this.parseFieldsFromQuery(this.soqlQuery);
         }
         
         if (!fieldsToUse || fieldsToUse.trim() === '') {
-            console.warn('No fields available for processing');
+            this.debugWarn('No fields available for processing');
             return [];
         }
         
@@ -719,7 +746,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             throw new Error('Could not determine object type from SOQL query');
         }
         
-        console.log('Getting field info for object:', objectName, 'fields:', fieldsToUse);
+        this.debugLog('Getting field info for object:', objectName, 'fields:', fieldsToUse);
         
         return await getFieldInfo({ 
             objectApiName: objectName, 
@@ -727,7 +754,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         });
     }
     
-    // NEW: Parse fields from SOQL query as backup
+    // Parse fields from SOQL query as backup
     parseFieldsFromQuery(query) {
         try {
             if (!query || query.trim() === '') {
@@ -738,7 +765,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             const selectMatch = normalizedQuery.match(/SELECT\s+(.*?)\s+FROM/i);
             
             if (!selectMatch) {
-                console.warn('Could not parse SELECT fields from query');
+                this.debugWarn('Could not parse SELECT fields from query');
                 return '';
             }
             
@@ -746,23 +773,23 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             // Clean up the fields and return as comma-separated string
             const fields = fieldsString.split(',').map(field => field.trim()).filter(field => field);
             
-            console.log('Parsed fields from query:', fields);
+            this.debugLog('Parsed fields from query:', fields);
             return fields.join(', ');
         } catch (error) {
-            console.error('Error parsing fields from query:', error);
+            this.logError('Error parsing fields from query:', error);
             return '';
         }
     }
     
     async executeQuery() {
-        console.log('Executing SOQL query:', this.soqlQuery);
+        this.debugLog('Executing SOQL query:', this.soqlQuery);
         
         const result = await executeQuery({ 
             soqlQuery: this.soqlQuery, 
             recordId: this.currentRecordId
         });
         
-        console.log('Query execution result:', result);
+        this.debugLog('Query execution result:', result);
         
         if (result.error) {
             throw new Error(result.error);
@@ -776,20 +803,20 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             const fromMatch = query.match(/FROM\s+(\w+)/i);
             return fromMatch ? fromMatch[1] : null;
         } catch (error) {
-            console.error('Error extracting object name:', error);
+            this.logError('Error extracting object name:', error);
             return null;
         }
     }
     
     buildColumnsFromSOQL(fieldInfos) {
-        console.log('Building columns from field infos:', fieldInfos);
+        this.debugLog('Building columns from field infos:', fieldInfos);
         
         return fieldInfos.map((fieldInfo, index) => {
             const column = {
                 label: this.getCustomFieldLabel(fieldInfo, index),
                 fieldName: fieldInfo.apiName,
                 type: this.mapFieldTypeToDataTableType(fieldInfo.type),
-                sortable: !this.columnSortingDisabled // Add this line
+                sortable: !this.columnSortingDisabled
             };
             
             if (this.defaultColumnWidth && this.defaultColumnWidth > 0) {
@@ -804,17 +831,16 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
                     target: '_blank'
                 };
                 column.fieldName = 'recordUrl';
-                // URL columns can still be sortable - they'll sort by the label
             }
             
-            console.log('Created column:', column);
+            this.debugLog('Created column:', column);
             
             return column;
         });
     }
     
     flattenRecords(records) {
-        console.log('Flattening records:', records);
+        this.debugLog('Flattening records:', records);
         
         return records.map(record => {
             const flatRecord = { ...record };
@@ -881,7 +907,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         this.hasData = this.displayedRecords.length > 0;
         this.hasMoreRecords = endIndex < this.allRecords.length;
         
-        console.log(`Showing ${this.displayedRecords.length} of ${this.allRecords.length} records`);
+        this.debugLog(`Showing ${this.displayedRecords.length} of ${this.allRecords.length} records`);
     }
     
     mapFieldTypeToDataTableType(fieldType) {
@@ -911,39 +937,39 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     // ===== EVENT HANDLERS =====
     
     handleRefresh() {
-        console.log(`Refresh clicked - Mode: ${this.dataSourceMode}`);
+        this.debugLog(`Refresh clicked - Mode: ${this.dataSourceMode}`);
         this.clearData();
         this.loadData();
     }
     
     handleViewMore() {
-        console.log('View More clicked');
+        this.debugLog('View More clicked');
         this.isLoadingMore = true;
         
         try {
             this.currentOffset += this.initialRecordsToLoad;
             this.updateDisplayedRecords();
         } catch (error) {
-            console.error('Error loading more records:', error);
+            this.logError('Error loading more records:', error);
         } finally {
             this.isLoadingMore = false;
         }
     }
     
     handleViewAll() {
-        console.log('View All clicked');
+        this.debugLog('View All clicked');
         
         // If viewAllUrl is configured, navigate to it
         if (this.viewAllUrl && this.viewAllUrl.trim() !== '') {
-            console.log('Navigating to View All URL:', this.viewAllUrl);
+            this.debugLog('Navigating to View All URL:', this.viewAllUrl);
             this.navigateToViewAllUrl();
         } else {
             // Fall back to showing all records in current table
-            console.log('No View All URL configured, showing all records in table');
+            this.debugLog('No View All URL configured, showing all records in table');
             if (this.allRecords.length > 0) {
                 this.displayedRecords = [...this.allRecords];
                 this.hasMoreRecords = false;
-                console.log('Showing all', this.displayedRecords.length, 'records');
+                this.debugLog('Showing all', this.displayedRecords.length, 'records');
             }
         }
     }
@@ -951,7 +977,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     handleSort(event) {
         try {
             const { fieldName: sortedBy, sortDirection } = event.detail;
-            console.log('Column sort requested:', sortedBy, sortDirection);
+            this.debugLog('Column sort requested:', sortedBy, sortDirection);
             
             this.sortedBy = sortedBy;
             this.sortDirection = sortDirection;
@@ -964,14 +990,13 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             this.updateDisplayedRecords();
             
         } catch (error) {
-            console.error('Error handling sort:', error);
+            this.logError('Error handling sort:', error);
         }
     }
 
-
     sortData(fieldName, direction) {
         try {
-            console.log('Sorting data by field:', fieldName, 'direction:', direction);
+            this.debugLog('Sorting data by field:', fieldName, 'direction:', direction);
             
             // Create a copy of allRecords for sorting
             const recordsToSort = [...this.allRecords];
@@ -1005,10 +1030,10 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             });
             
             this.allRecords = recordsToSort;
-            console.log('Data sorted successfully');
+            this.debugLog('Data sorted successfully');
             
         } catch (error) {
-            console.error('Error sorting data:', error);
+            this.logError('Error sorting data:', error);
         }
     }
 
@@ -1038,7 +1063,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             
             return null;
         } catch (error) {
-            console.error('Error getting field value:', error);
+            this.logError('Error getting field value:', error);
             return null;
         }
     }
@@ -1050,7 +1075,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
 
     handleLoadMore(event) {
         try {
-            console.log('Infinite loading triggered');
+            this.debugLog('Infinite loading triggered');
             
             // Prevent loading if we're already loading or no more records
             if (this.isLoadingMore || !this.hasMoreRecords) {
@@ -1069,7 +1094,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             }, 300);
             
         } catch (error) {
-            console.error('Error in infinite loading:', error);
+            this.logError('Error in infinite loading:', error);
             this.isLoadingMore = false;
         }
     }
@@ -1079,7 +1104,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         const baseUrl = window.location.origin + window.location.pathname.split('/s/')[0] + '/s';
         const fullUrl = baseUrl + this.viewAllUrl;
         
-        console.log('Full View All URL:', fullUrl);
+        this.debugLog('Full View All URL:', fullUrl);
         
         // Use standard navigation
         this[NavigationMixin.Navigate]({

@@ -33,21 +33,22 @@
     border-radius: 0.25rem;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
     margin: 0;
-    overflow: hidden; /* Ensures header background goes to edges */
+    overflow: hidden;
+    /* Ensures header background goes to edges */
 }
 
 /* Header section with gray background */
 .header-section {
     background-color: rgb(242, 242, 242);
     margin: 0;
-    padding: 0.75rem 1rem;
+    padding: 0.25rem 1rem;
     margin-bottom: 0;
 }
 
 /* Header title using site base font */
 .header-title {
     font-family: var(--dxp-s-base-font-family, var(--dxp-s-body-font-family));
-    font-size: var(--dxp-s-base-font-size, var(--dxp-s-body-font-size));
+    font-size: calc(var(--dxp-s-base-font-size)*1.5);
     margin: 0;
     padding: 0;
 }
@@ -60,15 +61,6 @@
     letter-spacing: 0.5px;
 }
 
-/* Content area padding (everything except header) */
-/* .content-area {
-    padding: 0.75rem 1rem;
-} */
-
-/* Enhanced empty state - shows header but minimal content */
-.empty-state-enhanced {
-    /* No content needed - just header will show */
-}
 
 /* Responsive datatable container */
 .responsive-table-container {
@@ -80,7 +72,8 @@
 
 /* Limited height table container for pagination */
 .limited-height-table {
-    max-height: 200px; /* Approximately 5 rows depending on row height */
+    max-height: 200px;
+    /* Approximately 5 rows depending on row height */
     overflow-y: auto;
 }
 
@@ -103,8 +96,10 @@
 
 /* Set font size for datatable rows - smaller text */
 .responsive-datatable lightning-datatable table tbody td {
-    font-size: 0.75rem !important; /* Smaller than previous 0.8125rem */
-    padding: 0.5rem 0.75rem !important; /* Slightly reduce padding */
+    font-size: 0.75rem !important;
+    /* Smaller than previous 0.8125rem */
+    padding: 0.5rem 0.75rem !important;
+    /* Slightly reduce padding */
 }
 
 .responsive-datatable lightning-datatable table tbody {
@@ -119,7 +114,7 @@
 }
 
 .slds-table {
-  font-size: .75rem !important;
+    font-size: .75rem !important;
 }
 
 /* Make header text smaller too */
@@ -144,21 +139,25 @@
 /* For very wide containers, limit max width for readability */
 @media (min-width: 1440px) {
     .responsive-table-container {
-        max-width: none; /* Remove max-width restriction */
+        max-width: none;
+        /* Remove max-width restriction */
     }
 }
 
 /* Action Button Container Styling */
 .action-button-container-single .action-button {
-    margin: 0; /* Single button gets no margin */
+    margin: 0;
+    /* Single button gets no margin */
 }
 
 .action-button-container-dual .action-button {
-    margin: 0 0.5rem; /* Dual buttons get side margins for spacing */
+    margin: 0 0.5rem;
+    /* Dual buttons get side margins for spacing */
 }
 
 .action-button-container-dual .action-button:first-child {
-    margin-right: 0.75rem; /* Extra space between View More and View All */
+    margin-right: 0.75rem;
+    /* Extra space between View More and View All */
 }
 
 .action-button-container-dual .action-button:last-child {
@@ -174,7 +173,8 @@
 /* Loading state enhancements for dual mode */
 .loading-container {
     text-align: center;
-    padding: 1rem; /* Reduced from 2rem */
+    padding: 1rem;
+    /* Reduced from 2rem */
 }
 
 .loading-container p {
@@ -198,13 +198,10 @@
 /* Enhanced no-data container for mode-specific messaging */
 .no-data-container {
     text-align: center;
-    padding: 1.5rem; /* Reduced from 3rem */
-    color: #706e6b;
-}
-
-.no-data-container .slds-text-body_small {
-    color: #8a8a8a;
-    font-style: italic;
+    padding: 1.5rem;
+    color: var(--dxp-s-body-font-color);
+    font-family: var(--dxp-s-body-font-family);
+    font-size: var(--dxp-s-body-font-size);
 }
 
 /* Debug section styling */
@@ -269,7 +266,8 @@
 
 /* Smart change detection prevents unnecessary animations */
 .component-container {
-    transition: none; /* Disable transitions to prevent flickering during smart updates */
+    transition: none;
+    /* Disable transitions to prevent flickering during smart updates */
 }
 
 /* Mode indicator styling for debug badges */
@@ -384,9 +382,11 @@
 /* Replace the SLDS grid with CSS Grid */
 .header-slots-row .slds-grid {
     display: grid !important;
-    grid-template-columns: 1fr; /* Single column = vertical stack */
+    grid-template-columns: 1fr;
+    /* Single column = vertical stack */
     gap: 0.25rem;
-    justify-items: end; /* Right-align each button */
+    justify-items: end;
+    /* Right-align each button */
     width: auto;
 }
 
@@ -397,9 +397,10 @@
         width: auto;
         margin-left: 1rem;
     }
-    
+
     .header-slots-row .slds-grid {
-        grid-template-columns: repeat(4, auto) !important; /* 4 columns = horizontal */
+        grid-template-columns: repeat(4, auto) !important;
+        /* 4 columns = horizontal */
         justify-items: center;
     }
 }
@@ -408,8 +409,10 @@
 
 /* Fixed header table container */
 .fixed-header-table {
-    height: 200px; /* Set a fixed height */
-    overflow: hidden; /* Prevent outer container scroll */
+    height: 200px;
+    /* Set a fixed height */
+    overflow: hidden;
+    /* Prevent outer container scroll */
     border: 1px solid #e5e5e5;
     border-radius: 0.25rem;
 }
@@ -461,7 +464,8 @@
 /* Remove the limited height constraint when using fixed headers */
 .fixed-header-table.limited-height-table {
     max-height: none !important;
-    height: 200px !important; /* Use fixed height instead */
+    height: 200px !important;
+    /* Use fixed height instead */
 }
 
 /* Alternative: Variable height based on content (max 200px) */
