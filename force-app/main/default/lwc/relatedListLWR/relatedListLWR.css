@@ -81,23 +81,6 @@
     background: transparent !important;
 }
 
-/* Action Button Container Styling */
-.action-button-container-single .action-button {
-    margin: 0;
-}
-
-.action-button-container-dual .action-button {
-    margin: 0 0.5rem;
-}
-
-.action-button-container-dual .action-button:first-child {
-    margin-right: 0.75rem;
-}
-
-.action-button-container-dual .action-button:last-child {
-    margin-left: 0.75rem;
-}
-
 .compact-action-buttons {
     margin-top: 0.25rem !important;
     margin-bottom: 1rem !important;
@@ -339,4 +322,103 @@
 .header-section ::slotted(div) {
     border-radius: 0.25rem;
     overflow: hidden;
+}
+
+/* Card layout - single column */
+.fixed-header-table .card-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0 1rem 1rem 1rem;
+    background: white;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.record-card {
+    background: transparent;
+    border: none;
+    padding: .875rem 0;
+    box-shadow: none;
+}
+
+.record-card:hover {
+    box-shadow: none;
+    background: transparent;
+}
+
+.card-title,
+.card-title-link {
+    font-size: 0.875rem;
+    display: block;
+    color: var(--dxp-s-body-font-color);
+}
+
+.card-title-link {
+    color: var(--dxp-s-link-text-color, #0176d3);
+    text-decoration: none;
+}
+
+.card-title-link:hover {
+    text-decoration: underline;
+}
+
+.card-field {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.card-field:last-child {
+    margin-bottom: 0;
+}
+
+.card-label {
+    font-weight: 500;
+    color: #706e6b;
+    flex-shrink: 0;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.card-value {
+    color: var(--dxp-s-body-font-color);
+    flex-grow: 1;
+    word-break: break-word;
+}
+
+/* Action Footer - Native Related List Style */
+.action-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    gap: 0.5rem;
+    background-color: var(--dxp-c-record-list-table-body-background-color, white);
+    border-top: 1px solid #e5e5e5;
+}
+
+.action-link {
+    color: var(--dxp-s-link-text-color, #0176d3);
+    text-decoration: var(--dxp-s-link-text-decoration);
+    font-size: 0.875rem;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.action-link:hover {
+    text-decoration: var(--dxp-s-link-text-decoration-hover, underline);
+}
+
+.action-link:focus {
+    text-decoration: var(--dxp-s-link-text-decoration-focus);
+    outline: none;
+}
+
+.action-divider {
+    color: #706e6b;
+    font-size: 0.875rem;
+    margin: 0 0.5rem;
 }

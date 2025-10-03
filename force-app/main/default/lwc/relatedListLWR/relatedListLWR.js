@@ -274,6 +274,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             resizeColumnDisabled: this.resizeColumnDisabled,
             columnSortingDisabled: this.columnSortingDisabled, 
             enableInfiniteLoading: this.enableInfiniteLoading,
+            displayMode: this.displayMode,
         });
     }
     
@@ -338,10 +339,46 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         return !this.isLoading && !this.error && !this.hasData;
     }
     
-    get showTable() {
-        return !this.isLoading && !this.error && this.hasData && this.displayedRecords.length > 0;
+    get displayMode() {
+        return this.configObj.displayMode || 'table';
     }
-    
+
+    get showTable() {
+        return this.displayMode === 'table' && !this.isLoading && !this.error && this.hasData && this.displayedRecords.length > 0;
+    }
+
+    get showCards() {
+        return this.displayMode === 'cards' && !this.isLoading && !this.error && this.hasData && this.displayedRecords.length > 0;
+    }
+
+    get firstFieldName() {
+        if (this.columns.length === 0) return null;
+        const firstCol = this.columns[0];
+        // If linking is enabled, the fieldName becomes 'recordUrl', so get the original field name
+        if (firstCol.fieldName === 'recordUrl' && firstCol.typeAttributes?.label?.fieldName) {
+            return firstCol.typeAttributes.label.fieldName;
+        }
+        return firstCol.fieldName;
+    }
+
+    get cardFields() {
+        // Return all fields except the first (which is shown as title)
+        return this.columns.slice(1).map((col, index) => {
+            // Get the actual field name, not 'recordUrl'
+            let fieldName = col.fieldName;
+            if (fieldName === 'recordUrl' && col.typeAttributes?.label?.fieldName) {
+                fieldName = col.typeAttributes.label.fieldName;
+            }
+            
+            return {
+                fieldName: fieldName,
+                label: col.label,
+                // Add unique key for iteration
+                key: `card-field-${index}`
+            };
+        });
+    }
+
     get showLoadMoreButton() {
         return this.showTable && this.hasMoreRecords && this.showViewMore;
     }
@@ -350,6 +387,10 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         const remainingRecords = this.allRecords.length - this.displayedRecords.length;
         const nextBatchSize = Math.min(remainingRecords, this.initialRecordsToLoad);
         return `Load More (${nextBatchSize} more)`;
+    }
+
+    get showBothButtons() {
+        return this.showLoadMoreButton && this.showViewAll;
     }
     
     // For template boolean properties
@@ -686,6 +727,9 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             // Flatten relationship fields for ARL mode
             this.flattenRelationshipFieldsForARL(processedRecord, records.length > 0 ? records[0] : {});
             
+            // Add card display data
+            processedRecord.cardData = this.buildCardData(processedRecord);
+            
             return processedRecord;
         });
     }
@@ -893,10 +937,48 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
                 flatRecord.recordUrl = this.buildRecordUrl(record.Id);
             }
             
+            // Add card display data
+            flatRecord.cardData = this.buildCardData(flatRecord);
+            
             return flatRecord;
         });
     }
     
+    buildCardData(record) {
+        if (!this.columns || this.columns.length === 0) {
+            return { title: '', fields: [] };
+        }
+        
+        // Get first field value for title
+        const firstCol = this.columns[0];
+        let titleFieldName = firstCol.fieldName;
+        if (titleFieldName === 'recordUrl' && firstCol.typeAttributes?.label?.fieldName) {
+            titleFieldName = firstCol.typeAttributes.label.fieldName;
+        }
+        
+        const cardData = {
+            title: record[titleFieldName] || '',
+            fields: []
+        };
+        
+        // Get remaining fields with their values
+        for (let i = 1; i < this.columns.length; i++) {
+            const col = this.columns[i];
+            let fieldName = col.fieldName;
+            if (fieldName === 'recordUrl' && col.typeAttributes?.label?.fieldName) {
+                fieldName = col.typeAttributes.label.fieldName;
+            }
+            
+            cardData.fields.push({
+                key: `field-${i}`,
+                label: col.label,
+                value: record[fieldName] || ''
+            });
+        }
+        
+        return cardData;
+    }
+
     // ===== SHARED UTILITY METHODS =====
     
     clearData() {

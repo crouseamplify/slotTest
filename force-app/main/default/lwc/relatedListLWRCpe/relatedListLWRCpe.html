@@ -155,13 +155,13 @@
         <!-- ===== TABLE SETTINGS TAB (with Data Source moved here) ===== -->
         <lightning-tab label="Table Settings">
 
-            <!-- Data Source Mode Toggle (moved from Data Source tab) -->
+            <!-- Data Source Selection -->
             <div class="slds-m-bottom_large">
                 <h3 class="slds-text-heading_small slds-m-bottom_small">Data Source Selection</h3>
                 
                 <lightning-input 
                     type="checkbox"
-                    label="Use Custom SOQL Query"
+                    label={propInputs.useCustomQuery.label}
                     checked={propInputs.useCustomQuery.value}
                     onchange={handleUseCustomQueryChange}
                     data-key={propInputs.useCustomQuery.key}
@@ -170,24 +170,9 @@
                 </lightning-input>
             </div>
 
-            <!-- Related List API Mode Section (moved from Data Source tab) -->
+            <!-- Related List API Mode Fields -->
             <template if:true={showRelatedListSection}>
                 <div class="slds-m-bottom_large">
-                    <div class="slds-box slds-theme_success slds-m-bottom_medium">
-                        <h3 class="slds-text-heading_small slds-m-bottom_small">
-                            <lightning-icon 
-                                icon-name="utility:dash" 
-                                size="x-small" 
-                                class="slds-m-right_x-small slds-icon-text-success">
-                            </lightning-icon>
-                            Related List API Mode (Fast & Automatic)
-                        </h3>
-                        <p class="slds-text-body_small">
-                            Optimal performance using Salesforce's built-in Related List API. 
-                            Automatically detects relationships and handles field resolution.
-                        </p>
-                    </div>
-
                     <lightning-input 
                         type={propInputs.relatedListName.type}
                         label={propInputs.relatedListName.label}
@@ -238,25 +223,9 @@
                 </div>
             </template>
 
-            <!-- Custom SOQL Mode Section (moved from Data Source tab) -->
+            <!-- Custom SOQL Mode Fields -->
             <template if:true={showSOQLSection}>
                 <div class="slds-m-bottom_large">
-                    <div class="slds-box slds-theme_warning slds-m-bottom_medium">
-                        <h3 class="slds-text-heading_small slds-m-bottom_small">
-                            <lightning-icon 
-                                icon-name="utility:apex" 
-                                size="x-small" 
-                                class="slds-m-right_x-small slds-icon-text-warning">
-                            </lightning-icon>
-                            Custom SOQL Mode (Advanced & Flexible)
-                        </h3>
-                        <p class="slds-text-body_small">
-                            Full SOQL control with custom WHERE clauses, relationship fields, and complex queries. 
-                            Perfect for advanced use cases requiring specific data filtering.
-                        </p>
-                    </div>
-
-                    <!-- SOQL Query Button -->
                     <lightning-button 
                         variant="brand" 
                         label={propInputs.soqlQuery.buttonLabel}
@@ -265,7 +234,6 @@
                         class="slds-m-bottom_medium">
                     </lightning-button>
 
-                    <!-- Display Fields (auto-populated from query parsing) -->
                     <lightning-input 
                         type={propInputs.displayFields.type}
                         label={propInputs.displayFields.label}
@@ -279,9 +247,26 @@
                 </div>
             </template>
 
-            <!-- Table Configuration Section -->
+            <!-- Display Mode Selection -->
             <div class="slds-m-bottom_large slds-m-top_large">
-                <h3 class="slds-text-heading_small slds-m-bottom_small">Table Display Settings</h3>
+                <h3 class="slds-text-heading_small slds-m-bottom_small">Display Mode</h3>
+                
+                <lightning-select
+                    name={propInputs.displayMode.key}
+                    label={propInputs.displayMode.label}
+                    value={propInputs.displayMode.value}
+                    options={propInputs.displayMode.options}
+                    onchange={handleDisplayModeChange}
+                    required={propInputs.displayMode.required}
+                    data-key={propInputs.displayMode.key}
+                    field-level-help={propInputs.displayMode.help}
+                    class={propInputs.displayMode.classes}>
+                </lightning-select>
+            </div>
+
+            <!-- Common Display Settings -->
+            <div class="slds-m-bottom_large">
+                <h3 class="slds-text-heading_small slds-m-bottom_small">Display Settings</h3>
 
                 <lightning-input 
                     type={propInputs.initialRecordsToLoad.type}
@@ -297,52 +282,6 @@
                 </lightning-input>
 
                 <lightning-input 
-                    type={propInputs.defaultColumnWidth.type}
-                    label={propInputs.defaultColumnWidth.label}
-                    value={propInputs.defaultColumnWidth.value}
-                    onblur={handleDefaultColumnWidthChange}
-                    data-key={propInputs.defaultColumnWidth.key}
-                    field-level-help={propInputs.defaultColumnWidth.help}
-                    required={propInputs.defaultColumnWidth.required}
-                    class={propInputs.defaultColumnWidth.classes}
-                    min="80"
-                    max="800">
-                </lightning-input>
-
-                <lightning-input 
-                    type={propInputs.showRowNumberColumn.type}
-                    label={propInputs.showRowNumberColumn.label}
-                    checked={propInputs.showRowNumberColumn.value}
-                    onchange={handleShowRowNumberColumnChange}
-                    data-key={propInputs.showRowNumberColumn.key}
-                    field-level-help={propInputs.showRowNumberColumn.help}
-                    required={propInputs.showRowNumberColumn.required}
-                    class={propInputs.showRowNumberColumn.classes}>
-                </lightning-input>
-
-                <lightning-input 
-                    type={propInputs.resizeColumnDisabled.type}
-                    label={propInputs.resizeColumnDisabled.label}
-                    checked={propInputs.resizeColumnDisabled.value}
-                    onchange={handleResizeColumnDisabledChange}
-                    data-key={propInputs.resizeColumnDisabled.key}
-                    field-level-help={propInputs.resizeColumnDisabled.help}
-                    required={propInputs.resizeColumnDisabled.required}
-                    class={propInputs.resizeColumnDisabled.classes}>
-                </lightning-input>
-
-                <lightning-input 
-                    type={propInputs.columnSortingDisabled.type}
-                    label={propInputs.columnSortingDisabled.label}
-                    checked={propInputs.columnSortingDisabled.value}
-                    onchange={handleColumnSortingDisabledChange}
-                    data-key={propInputs.columnSortingDisabled.key}
-                    field-level-help={propInputs.columnSortingDisabled.help}
-                    required={propInputs.columnSortingDisabled.required}
-                    class={propInputs.columnSortingDisabled.classes}>
-                </lightning-input>
-
-                <lightning-input 
                     type={propInputs.enableInfiniteLoading.type}
                     label={propInputs.enableInfiniteLoading.label}
                     checked={propInputs.enableInfiniteLoading.value}
@@ -353,6 +292,72 @@
                     class={propInputs.enableInfiniteLoading.classes}>
                 </lightning-input>
             </div>
+
+            <!-- List View Settings -->
+            <template if:true={showTableOnlySettings}>
+                <div class="slds-m-bottom_large">
+                    <h3 class="slds-text-heading_small slds-m-bottom_small">List View Settings</h3>
+
+                    <lightning-input 
+                        type={propInputs.defaultColumnWidth.type}
+                        label={propInputs.defaultColumnWidth.label}
+                        value={propInputs.defaultColumnWidth.value}
+                        onblur={handleDefaultColumnWidthChange}
+                        data-key={propInputs.defaultColumnWidth.key}
+                        field-level-help={propInputs.defaultColumnWidth.help}
+                        required={propInputs.defaultColumnWidth.required}
+                        class={propInputs.defaultColumnWidth.classes}
+                        min="80"
+                        max="800">
+                    </lightning-input>
+
+                    <lightning-input 
+                        type={propInputs.showRowNumberColumn.type}
+                        label={propInputs.showRowNumberColumn.label}
+                        checked={propInputs.showRowNumberColumn.value}
+                        onchange={handleShowRowNumberColumnChange}
+                        data-key={propInputs.showRowNumberColumn.key}
+                        field-level-help={propInputs.showRowNumberColumn.help}
+                        required={propInputs.showRowNumberColumn.required}
+                        class={propInputs.showRowNumberColumn.classes}>
+                    </lightning-input>
+
+                    <lightning-input 
+                        type={propInputs.resizeColumnDisabled.type}
+                        label={propInputs.resizeColumnDisabled.label}
+                        checked={propInputs.resizeColumnDisabled.value}
+                        onchange={handleResizeColumnDisabledChange}
+                        data-key={propInputs.resizeColumnDisabled.key}
+                        field-level-help={propInputs.resizeColumnDisabled.help}
+                        required={propInputs.resizeColumnDisabled.required}
+                        class={propInputs.resizeColumnDisabled.classes}>
+                    </lightning-input>
+
+                    <lightning-input 
+                        type={propInputs.columnSortingDisabled.type}
+                        label={propInputs.columnSortingDisabled.label}
+                        checked={propInputs.columnSortingDisabled.value}
+                        onchange={handleColumnSortingDisabledChange}
+                        data-key={propInputs.columnSortingDisabled.key}
+                        field-level-help={propInputs.columnSortingDisabled.help}
+                        required={propInputs.columnSortingDisabled.required}
+                        class={propInputs.columnSortingDisabled.classes}>
+                    </lightning-input>
+                </div>
+            </template>
+
+            <!-- Card View Settings -->
+            <template if:true={isCardMode}>
+                <div class="slds-m-bottom_large">
+                    <div class="slds-box slds-theme_shade">
+                        <h3 class="slds-text-heading_small slds-m-bottom_small">Card View Settings</h3>
+                        <p class="slds-text-body_small">
+                            Cards display in a single-column vertical layout. List view-specific settings 
+                            (column width, row numbers, resize, sorting) are not applicable to card view.
+                        </p>
+                    </div>
+                </div>
+            </template>
 
         </lightning-tab>
     </lightning-tabset>

@@ -124,36 +124,59 @@
                 </lightning-datatable>
             </div>
         </template>
-    </div>
 
-    <!-- Action Buttons Container -->
-    <template if:true={showActionButtonContainer}>
-        <template if:true={showTable}>
-            <div class={actionButtonContainerClass}>
-                <!-- View More Button -->
+        <!-- Card View -->
+        <template if:true={showCards}>
+            <div class="fixed-header-table">
+                <div class="card-container">
+                    <template for:each={displayedRecords} for:item="record">
+                        <div key={record.Id} class="record-card">
+                            <!-- Card Title (First Field) -->
+                            <template if:true={enableRecordLinking}>
+                                <a href={record.recordUrl} class="card-title-link" target="_blank">
+                                    {record.cardData.title}
+                                </a>
+                            </template>
+                            <template if:false={enableRecordLinking}>
+                                <div class="card-title">
+                                    {record.cardData.title}
+                                </div>
+                            </template>
+                            
+                            <!-- Remaining Fields -->
+                            <template for:each={record.cardData.fields} for:item="field">
+                                <div key={field.key} class="card-field">
+                                    <span class="card-label">{field.label}:</span>
+                                    <span class="card-value">{field.value}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- Action Buttons Footer -->
+        <template if:true={showActionButtonContainer}>
+            <div class="action-footer">
                 <template if:true={showLoadMoreButton}>
-                    <lightning-button
-                        label={loadMoreButtonLabel}
-                        variant="outline-brand"
-                        onclick={handleViewMore}
-                        disabled={isLoadingMore}
-                        class="action-button">
-                    </lightning-button>
+                    <a href="javascript:void(0);" onclick={handleViewMore} class="dxp-link-text action-link">
+                        {loadMoreButtonLabel}
+                    </a>
                 </template>
-
-                <!-- View All Button -->
+                
+                <template if:true={showBothButtons}>
+                    <span class="action-divider">|</span>
+                </template>
+                
                 <template if:true={showViewAll}>
-                    <lightning-button
-                        label="View All"
-                        variant="outline-brand"
-                        onclick={handleViewAll}
-                        class="action-button">
-                    </lightning-button>
+                    <a href="javascript:void(0);" onclick={handleViewAll} class="dxp-link-text action-link">
+                        View All
+                    </a>
                 </template>
             </div>
         </template>
-    </template>
-
+    </div>
     <!-- Performance Debug Info (only visible when enabled in CPE) -->
     <template if:true={showDebugInfo}>
         <div class="content-area">

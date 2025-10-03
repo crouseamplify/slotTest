@@ -112,18 +112,14 @@ export default class SlotTestCpe extends LightningElement {
         },
         useCustomQuery: {
             key: 'useCustomQuery',
-            label: 'Data Source Mode',
-            type: 'toggle',
-            help: 'Choose your data source: Related List API (fast, automatic) or Custom SOQL (flexible, advanced)',
+            label: 'Use Custom SOQL Query',
+            type: 'checkbox',
+            help: 'Enable Custom SOQL Mode for advanced & flexible queries with full SOQL control, custom WHERE clauses, and relationship fields. Leave unchecked to use Related List API Mode for fast & automatic performance with Salesforce\'s built-in API.',
             required: false,
             valuePath: 'useCustomQuery',
             value: false,
             doSetDefaultValue: true,
-            classes: defaultCSSClasses,
-            options: [
-                { label: 'Related List API', value: false },
-                { label: 'Custom SOQL', value: true }
-            ]
+            classes: defaultCSSClasses
         },
         relatedListName: {
             key: 'relatedListName',
@@ -291,12 +287,27 @@ export default class SlotTestCpe extends LightningElement {
             value: false,
             doSetDefaultValue: true,
             classes: defaultCSSClasses
-        }
+        },
+        displayMode: {
+            key: 'displayMode',
+            label: 'Display Mode',
+            type: 'select',
+            help: 'Choose how to display records: Table view or Card view.',
+            required: false,
+            valuePath: 'displayMode',
+            value: 'table',
+            doSetDefaultValue: true,
+            classes: defaultCSSClasses,
+            options: [
+                { label: 'Table', value: 'table' },
+                { label: 'Cards', value: 'cards' }
+            ]
+        },
     };
 
     get recordIdPlaceholder() {
         return this.propInputs.recordId.value === '{!recordId}' || !this.propInputs.recordId.value ? 
-               'e.g., 0031234567890ABC or {!recordId}' : '';
+               'Use {!recordId} unless debugging a specific record' : '';
     }
 
     @api
@@ -377,6 +388,14 @@ export default class SlotTestCpe extends LightningElement {
 
     get hasAvailableFields() {
         return this.fieldsInitialized && this.availableFields && this.availableFields.length > 0;
+    }
+
+    get showTableOnlySettings() {
+        return this.propInputs.displayMode.value === 'table';
+    }
+
+    get isCardMode() {
+        return this.propInputs.displayMode.value === 'cards';
     }
 
     get showRelatedListSection() {
@@ -518,6 +537,19 @@ export default class SlotTestCpe extends LightningElement {
             }
         } catch (error) {
             console.error('Error in handleRelatedListLabelChange:', error);
+        }
+    }
+
+    handleDisplayModeChange(e) {
+        try {
+            const newValue = this.getEventValue(e, false);
+            this.propInputs.displayMode.value = newValue;
+            let tmpvalueObj = this.getValueObj();
+            tmpvalueObj.displayMode = this.propInputs.displayMode.value;
+            this.dispatchEvent(new CustomEvent("valuechange", 
+                {detail: {value: JSON.stringify(tmpvalueObj)}}));
+        } catch (error) {
+            console.error('Error in handleDisplayModeChange:', error);
         }
     }
 
