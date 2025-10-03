@@ -348,25 +348,12 @@
 
 .card-title,
 .card-title-link {
-    font-size: 0.875rem;
     display: block;
-    color: var(--dxp-s-body-font-color);
-}
-
-.card-title-link {
-    color: var(--dxp-s-link-text-color, #0176d3);
-    text-decoration: none;
-}
-
-.card-title-link:hover {
-    text-decoration: underline;
 }
 
 .card-field {
     display: flex;
     gap: 0.5rem;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
 }
 
 .card-field:last-child {
@@ -375,9 +362,8 @@
 
 .card-label {
     font-weight: 500;
-    color: #706e6b;
     flex-shrink: 0;
-    max-width: 150px;
+    width: 215px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

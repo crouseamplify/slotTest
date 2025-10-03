@@ -684,12 +684,13 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             const column = {
                 label: this.getCustomFieldLabel(field, index),
                 fieldName: this.getDisplayFieldNameForARL(field.apiName),
-                type: field.type === 'DATETIME' ? 'text' : fieldType,
+                type: (field.type === 'DATETIME' || field.type === 'DATE') ? 'text' : fieldType,
                 isDateTime: field.type === 'DATETIME',
+                isDate: field.type === 'DATE',
                 sortable: !this.columnSortingDisabled,
                 wrapText: true
             };
-           
+        
             if (this.defaultColumnWidth && this.defaultColumnWidth > 0) {
                 column.fixedWidth = this.defaultColumnWidth;
             }
@@ -712,10 +713,16 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         return records.map(record => {
             const processedRecord = { ...record };
             
-            // Format datetime fields
+            // Format datetime and date fields
             this.columns.forEach(col => {
-                if (col.type === 'text' && col.isDateTime && processedRecord[col.fieldName]) {
-                    processedRecord[col.fieldName] = this.formatDateTime(processedRecord[col.fieldName]);
+                const fieldName = col.fieldName === 'recordUrl' ? 
+                    (col.typeAttributes?.label?.fieldName || this.columns[0].fieldName) : 
+                    col.fieldName;
+                    
+                if (col.isDateTime && processedRecord[fieldName]) {
+                    processedRecord[fieldName] = this.formatDateTime(processedRecord[fieldName]);
+                } else if (col.isDate && processedRecord[fieldName]) {
+                    processedRecord[fieldName] = this.formatDate(processedRecord[fieldName]);
                 }
             });
 
@@ -885,8 +892,9 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             const column = {
                 label: this.getCustomFieldLabel(fieldInfo, index),
                 fieldName: fieldInfo.apiName,
-                type: fieldInfo.type === 'DATETIME' ? 'text' : fieldType,
+                type: (fieldInfo.type === 'DATETIME' || fieldInfo.type === 'DATE') ? 'text' : fieldType,
                 isDateTime: fieldInfo.type === 'DATETIME',
+                isDate: fieldInfo.type === 'DATE',
                 sortable: !this.columnSortingDisabled,
                 wrapText: true
             };
@@ -910,7 +918,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             return column;
         });
     }
-    
+        
     flattenRecords(records) {
         this.debugLog('Flattening records:', records);
         
@@ -931,6 +939,15 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
                     }
                 });
             }
+            
+            // Format datetime and date fields
+            this.columns.forEach(col => {
+                if (col.isDateTime && flatRecord[col.fieldName]) {
+                    flatRecord[col.fieldName] = this.formatDateTime(flatRecord[col.fieldName]);
+                } else if (col.isDate && flatRecord[col.fieldName]) {
+                    flatRecord[col.fieldName] = this.formatDate(flatRecord[col.fieldName]);
+                }
+            });
             
             // Add record URL for linking
             if (this.enableRecordLinking && this.recordPageUrl && record.Id) {
@@ -1032,7 +1049,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             'NUMBER': 'text',
             'DOUBLE': 'number',
             'INTEGER': 'number',
-            'DATE': 'date',
+            'DATE': 'text',
             'DATETIME': 'text',
             'TIME': 'text',
             'BOOLEAN': 'boolean',
@@ -1042,6 +1059,22 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         };
         
         return typeMap[fieldType?.toUpperCase()] || 'text';
+    }
+
+    formatDate(dateString) {
+        if (!dateString) return '';
+        
+        try {
+            const date = new Date(dateString);
+            // Format as M/D/YYYY
+            return date.toLocaleDateString('en-US', {
+                month: 'numeric',
+                day: 'numeric',
+                year: 'numeric'
+            });
+        } catch (error) {
+            return dateString;
+        }
     }
 
     formatDateTime(dateTimeString) {

@@ -292,7 +292,7 @@ export default class SlotTestCpe extends LightningElement {
             key: 'displayMode',
             label: 'Display Mode',
             type: 'select',
-            help: 'Choose how to display records: Table view or Card view.',
+            help: 'Choose how to display records. List View shows data in a table format. Card View displays records in a single-column vertical layout. Note: List view-specific settings (column width, row numbers, resize, sorting) do not apply to card view.',
             required: false,
             valuePath: 'displayMode',
             value: 'table',
