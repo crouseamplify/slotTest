@@ -2,7 +2,7 @@
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>64.0</apiVersion>
     <isExposed>true</isExposed>
-    <masterLabel>Related List</masterLabel>
+    <masterLabel>Related List LWR</masterLabel>
     <targets>
         <target>lightningCommunity__Page</target>
         <target>lightningCommunity__Default</target>
@@ -10,7 +10,7 @@
     <targetConfigs>
         <targetConfig targets="lightningCommunity__Default">
             <!-- Use Custom Property Editor for enhanced UI -->
-            <property name="configJSONString" type="String" editor="c/slotTestCpe" />
+            <property name="configJSONString" type="String" editor="c/relatedListLWRCpe" />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

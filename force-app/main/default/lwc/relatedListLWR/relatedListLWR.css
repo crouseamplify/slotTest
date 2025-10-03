@@ -1,0 +1,342 @@
+/* DXP Link Text Styling for LWR Sites */
+.dxp-link-text lightning-datatable a {
+    text-decoration: var(--dxp-s-link-text-decoration);
+}
+
+.dxp-link-text lightning-datatable a:hover {
+    text-decoration: var(--dxp-s-link-text-decoration-hover);
+}
+
+.dxp-link-text lightning-datatable a:focus {
+    text-decoration: var(--dxp-s-link-text-decoration-focus);
+}
+
+.dxp-link-text a {
+    text-decoration: var(--dxp-s-link-text-decoration);
+}
+
+.dxp-link-text a:hover {
+    text-decoration: var(--dxp-s-link-text-decoration-hover);
+}
+
+.dxp-link-text a:focus {
+    text-decoration: var(--dxp-s-link-text-decoration-focus);
+}
+
+/* Component container with border and proper spacing */
+.component-container {
+    background-color: var(--dxp-c-record-list-table-body-background-color, white);
+    border: var(--dxp-c-record-list-header-border-width, 1px) solid var(--dxp-c-record-list-header-border-color, #E5E5E5);
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+    margin: 0;
+    overflow: hidden;
+    transition: none;
+}
+
+/* Header section with gray background */
+.header-section {
+    background-color: rgb(242, 242, 242);
+    margin: 0;
+    padding: 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+}
+
+.header-section > .slds-grid {
+    width: 100%;
+    padding: 0 1rem;
+}
+
+/* Header title using site base font */
+.header-title {
+    font-family: var(--dxp-s-base-font-family, var(--dxp-s-body-font-family));
+    font-size: calc(var(--dxp-s-base-font-size)*1.5);
+    margin: 0;
+    padding: 0;
+}
+
+/* Responsive datatable container */
+.responsive-table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin: 0;
+    padding: 0;
+}
+
+/* Make datatable responsive to container width */
+.responsive-datatable {
+    width: 100%;
+    min-width: 100%;
+}
+
+.responsive-datatable lightning-datatable {
+    width: 100%;
+    margin: 0 !important;
+}
+
+/* Remove gray background from datatable header */
+.responsive-datatable lightning-datatable table thead {
+    background: transparent !important;
+}
+
+/* Action Button Container Styling */
+.action-button-container-single .action-button {
+    margin: 0;
+}
+
+.action-button-container-dual .action-button {
+    margin: 0 0.5rem;
+}
+
+.action-button-container-dual .action-button:first-child {
+    margin-right: 0.75rem;
+}
+
+.action-button-container-dual .action-button:last-child {
+    margin-left: 0.75rem;
+}
+
+.compact-action-buttons {
+    margin-top: 0.25rem !important;
+    margin-bottom: 1rem !important;
+}
+
+/* Loading state */
+.loading-container {
+    text-align: center;
+    padding: 1rem;
+}
+
+.loading-container p {
+    color: #706e6b;
+    font-size: 0.875rem;
+}
+
+/* Error container */
+.error-container {
+    border-left: 4px solid #c23934;
+    padding: 1rem;
+    background-color: #fef7f7;
+    margin: 1rem 0;
+}
+
+.error-container .slds-text-body_small {
+    color: #706e6b;
+    margin-top: 0.5rem;
+}
+
+/* No data container */
+.no-data-container {
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--dxp-s-body-font-color);
+    font-family: var(--dxp-s-body-font-family);
+    font-size: var(--dxp-s-body-font-size);
+}
+
+/* Debug section styling */
+.debug-section {
+    background-color: #f3f3f3;
+    border: 1px solid #d8dde6;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.related-list-details {
+    background-color: #fafaf9;
+    border-left: 4px solid #0176d3;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.debug-code {
+    font-family: 'Courier New', monospace;
+    background-color: #f4f6f9;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.875rem;
+}
+
+.button-info {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background-color: #ffffff;
+    border: 1px solid #d8dde6;
+    border-radius: 4px;
+}
+
+.related-list-item {
+    border-bottom: 1px solid #e5e5e5;
+    padding: 0.75rem 0;
+}
+
+.related-list-item:last-child {
+    border-bottom: none;
+}
+
+.input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .input-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Mode indicator styling for debug badges */
+.mode-indicator {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+}
+
+.mode-indicator--arl {
+    background-color: #e8f4fd;
+    color: #0176d3;
+    border: 1px solid #c9dbea;
+}
+
+.mode-indicator--soql {
+    background-color: #fef7e0;
+    color: #b45500;
+    border: 1px solid #ddbd4a;
+}
+
+/* Performance indicators */
+.performance-indicator {
+    font-size: 0.75rem;
+    color: #706e6b;
+    font-style: italic;
+}
+
+.performance-indicator--fast {
+    color: #4bca81;
+}
+
+.performance-indicator--slow {
+    color: #ea001e;
+}
+
+/* Configuration status styling */
+.config-status {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    margin: 0.5rem 0;
+}
+
+.config-status--valid {
+    background-color: #f3f9f4;
+    color: #4bca81;
+    border: 1px solid #4bca81;
+}
+
+.config-status--invalid {
+    background-color: #fef7f7;
+    color: #ea001e;
+    border: 1px solid #ea001e;
+}
+
+.config-status--warning {
+    background-color: #fef8f2;
+    color: #ffb75d;
+    border: 1px solid #ffb75d;
+}
+
+/* Header slot layout */
+.header-slots-row {
+    display: flex;
+    flex: 1 1 100%;
+    width: 100%;
+    justify-content: flex-end;
+}
+
+.header-slots-row .slds-grid {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    justify-items: end;
+    width: auto;
+}
+
+@media (min-width: 1400px) {
+    .header-slots-row {
+        flex: 0 1 auto;
+        width: auto;
+        margin-left: 1rem;
+    }
+
+    .header-slots-row .slds-grid {
+        grid-template-columns: repeat(4, auto) !important;
+        justify-items: center;
+    }
+}
+
+/* Fixed header table with scrolling */
+.fixed-header-table {
+    height: 200px;
+    overflow: hidden;
+    border: 1px solid #e5e5e5;
+    border-radius: 0.25rem;
+}
+
+.fixed-header-table lightning-datatable {
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+.fixed-header-table lightning-datatable .slds-table_header-fixed_container {
+    height: 100% !important;
+    overflow-y: auto !important;
+}
+
+.fixed-header-table lightning-datatable table thead {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    background-color: #fafaf9 !important;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.fixed-header-table lightning-datatable table thead th {
+    background-color: #fafaf9 !important;
+    border-bottom: 2px solid #e5e5e5 !important;
+    padding: 0.75rem !important;
+    font-weight: 600 !important;
+}
+
+.fixed-header-table lightning-datatable table tbody {
+    background-color: white !important;
+}
+
+.fixed-header-table lightning-datatable table tbody tr {
+    border-bottom: 1px solid #e5e5e5 !important;
+}
+
+.fixed-header-table lightning-datatable table tbody tr:hover {
+    background-color: #f4f6f9 !important;
+}
+
+/* Icon slot styling - rounded corners matching slds-card */
+.header-section ::slotted(*) {
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+/* Specific targeting for images in icon slot */
+.header-section ::slotted(img),
+.header-section ::slotted(div) {
+    border-radius: 0.25rem;
+    overflow: hidden;
+}

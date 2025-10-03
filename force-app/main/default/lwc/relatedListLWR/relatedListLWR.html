@@ -1,0 +1,217 @@
+<template>
+<div class="component-container">
+    <div class="header-section">
+        <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+            <div class="slds-col">
+                <h3 class="slds-grid slds-grid_vertical-align-center header-title">
+                        <!-- SLDS Icon - shown when iconType is 'slds' -->
+                        <template if:true={showStandardIcon}>
+                            <lightning-icon 
+                                icon-name={relatedListIcon} 
+                                size="medium" 
+                                alternative-text="Related List Icon"
+                                class="slds-m-right_x-small">
+                            </lightning-icon>
+                        </template>
+                        
+                        <!-- Icon Slot - shown when iconType is 'slot' -->
+                        <template if:true={showIconSlot}>
+                            <div class="slds-m-right_x-small">
+                                <slot name="iconSlot"></slot>
+                            </div>
+                        </template>
+                        
+                        <span>{relatedListLabel}</span>
+                    </h3>
+            </div>
+            
+            <div class="slds-col slds-no-flex">
+                <div class="slds-grid slds-grid_vertical-align-center">
+                    <div class="slds-col slds-m-right_small">
+                        <lightning-button-icon
+                            icon-name="utility:refresh"
+                            alternative-text="Refresh"
+                            title="Refresh"
+                            onclick={handleRefresh}
+                            disabled={isLoading}>
+                        </lightning-button-icon>
+                    </div>
+                    
+                    <template if:true={showSlot1}>
+                        <div class="slds-col slds-m-right_xx-small">
+                            <slot name="slot1"></slot>
+                        </div>
+                    </template>
+                    <template if:true={showSlot2}>
+                        <div class="slds-col slds-m-right_xx-small">
+                            <slot name="slot2"></slot>
+                        </div>
+                    </template>
+                    <template if:true={showSlot3}>
+                        <div class="slds-col slds-m-right_xx-small">
+                            <slot name="slot3"></slot>
+                        </div>
+                    </template>
+                    <template if:true={showSlot4}>
+                        <div class="slds-col">
+                            <slot name="slot4"></slot>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        
+        <!-- Loading State -->
+        <template if:true={isLoading}>
+            <div class="loading-container">
+                <lightning-spinner 
+                    alternative-text="Loading..." 
+                    size="medium">
+                </lightning-spinner>
+                <p class="slds-m-top_small">
+                    Loading data...
+                </p>
+            </div>
+        </template>
+
+        <!-- Error State -->
+        <template if:true={error}>
+            <div class="error-container">
+                <lightning-icon 
+                    icon-name="utility:error" 
+                    size="small" 
+                    variant="error"
+                    class="slds-m-right_small">
+                </lightning-icon>
+                <div>
+                    <h4 class="slds-text-heading_small">Error Loading Data</h4>
+                    <p class="slds-m-top_x-small">{error}</p>
+                    <p class="slds-m-top_x-small slds-text-body_small">
+                        <strong>Data Source:</strong> {dataSourceMode}
+                    </p>
+                </div>
+            </div>
+        </template>
+
+        <!-- Empty State -->
+        <template if:true={showEmptyState}>
+            <div class="no-data-container">
+                <p>No records available.</p>
+            </div>
+        </template>
+
+        <!-- Data Table -->
+        <template if:true={showTable}>
+            <div class={tableContainerClass}>
+                <lightning-datatable
+                    key-field="Id"
+                    data={displayedRecords}
+                    columns={columns}
+                    hide-checkbox-column={hideCheckboxColumnValue}
+                    show-row-number-column={showRowNumberColumnValue}
+                    resize-column-disabled={resizeColumnDisabled}
+                    sorted-by={sortedBy}
+                    sorted-direction={sortDirection}
+                    onsort={handleSort}
+                    enable-infinite-loading={enableInfiniteLoading}
+                    onloadmore={handleLoadMore}
+                    is-loading={isLoadingMore}
+                    class="dxp-link-text responsive-datatable">
+                </lightning-datatable>
+            </div>
+        </template>
+    </div>
+
+    <!-- Action Buttons Container -->
+    <template if:true={showActionButtonContainer}>
+        <template if:true={showTable}>
+            <div class={actionButtonContainerClass}>
+                <!-- View More Button -->
+                <template if:true={showLoadMoreButton}>
+                    <lightning-button
+                        label={loadMoreButtonLabel}
+                        variant="outline-brand"
+                        onclick={handleViewMore}
+                        disabled={isLoadingMore}
+                        class="action-button">
+                    </lightning-button>
+                </template>
+
+                <!-- View All Button -->
+                <template if:true={showViewAll}>
+                    <lightning-button
+                        label="View All"
+                        variant="outline-brand"
+                        onclick={handleViewAll}
+                        class="action-button">
+                    </lightning-button>
+                </template>
+            </div>
+        </template>
+    </template>
+
+    <!-- Performance Debug Info (only visible when enabled in CPE) -->
+    <template if:true={showDebugInfo}>
+        <div class="content-area">
+            <div class="slds-m-top_large">
+                <lightning-accordion allow-multiple-sections-open>
+                    <lightning-accordion-section name="performanceInfo" label="Performance & Debug Information">
+                        <div class="slds-text-longform">
+                            <h4 class="slds-text-heading_small">Configuration:</h4>
+                            <div class="slds-m-bottom_medium">
+                                <p><strong>Data Source Mode:</strong> {dataSourceMode}</p>
+                                <p><strong>Use Custom Query:</strong> {useCustomQuery}</p>
+                                <p><strong>Record ID:</strong> {recordId}</p>
+                                <p><strong>Detected Object Type:</strong> {detectedObjectType}</p>
+                                <p><strong>Last Load Time:</strong> {lastLoadTime}ms</p>
+                                <p><strong>Has Valid Config:</strong> {hasValidConfiguration}</p>
+                            </div>
+                            
+                            <!-- SOQL Mode Debug Info -->
+                            <template if:true={useCustomQuery}>
+                                <h4 class="slds-text-heading_small">Custom SOQL Mode Configuration:</h4>
+                                <div class="slds-m-bottom_medium">
+                                    <p><strong>SOQL Query:</strong> {soqlQuery}</p>
+                                    <p><strong>Display Fields:</strong> {displayFields}</p>
+                                </div>
+                            </template>
+                            
+                            <!-- ARL Mode Debug Info -->
+                            <template if:false={useCustomQuery}>
+                                <h4 class="slds-text-heading_small">Related List API Mode Configuration:</h4>
+                                <div class="slds-m-bottom_medium">
+                                    <p><strong>Related List Name:</strong> {relatedListName}</p>
+                                    <p><strong>Relationship Field:</strong> {relationshipField}</p>
+                                    <p><strong>Enabled Fields:</strong> {enabledFields}</p>
+                                </div>
+                            </template>
+                            
+                            <h4 class="slds-text-heading_small">Current State:</h4>
+                            <div class="slds-m-bottom_medium">
+                                <p><strong>Total Records:</strong> {allRecords.length}</p>
+                                <p><strong>Displayed Records:</strong> {displayedRecords.length}</p>
+                                <p><strong>Columns:</strong> {columns.length}</p>
+                                <p><strong>Has More Records:</strong> {hasMoreRecords}</p>
+                                <p><strong>Is Loading:</strong> {isLoading}</p>
+                            </div>
+                            
+                            <h4 class="slds-text-heading_small">UI Configuration:</h4>
+                            <div class="slds-m-bottom_medium">
+                                <p><strong>Number of Slots:</strong> {numberOfSlots}</p>
+                                <p><strong>Show View More:</strong> {showViewMore}</p>
+                                <p><strong>Show View All:</strong> {showViewAll}</p>
+                                <p><strong>Enable Record Linking:</strong> {enableRecordLinking}</p>
+                                <p><strong>Record Page URL:</strong> {recordPageUrl}</p>
+                            </div>
+                        </div>
+                    </lightning-accordion-section>
+                </lightning-accordion>
+            </div>
+        </div>
+    </template>
+</div>
+</template>
