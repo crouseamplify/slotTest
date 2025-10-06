@@ -1,5 +1,5 @@
 <template>
-<!-- ===== RECORD CONTEXT TAB ===== -->
+<!-- ===== RECORD CONTEXT ===== -->
     <lightning-input 
         type={propInputs.recordId.type}
         label={propInputs.recordId.label}
@@ -11,6 +11,19 @@
         class={propInputs.recordId.classes}
         placeholder={recordIdPlaceholder}>
     </lightning-input>
+
+    <!-- ===== RELATED LIST TYPE SELECTOR ===== -->
+    <lightning-select
+        name={propInputs.relatedListType.key}
+        label={propInputs.relatedListType.label}
+        value={propInputs.relatedListType.value}
+        options={propInputs.relatedListType.options}
+        onchange={handleRelatedListTypeChange}
+        required={propInputs.relatedListType.required}
+        data-key={propInputs.relatedListType.key}
+        field-level-help={propInputs.relatedListType.help}
+        class={propInputs.relatedListType.classes}>
+    </lightning-select>
         
     <lightning-tabset>    
         <!-- ===== GENERAL TAB ===== -->
@@ -28,7 +41,7 @@
                 class={propInputs.numberOfSlots.classes}>
             </lightning-select>
 
-        <!-- Icon Type Selection -->
+            <!-- Icon Type Selection -->
             <lightning-select
                 name={propInputs.iconType.key}
                 label={propInputs.iconType.label}
@@ -41,7 +54,7 @@
                 class={propInputs.iconType.classes}>
             </lightning-select>
 
-        <!-- Show SLDS Icon input only when SLDS Icon is selected -->
+            <!-- Show SLDS Icon input only when SLDS Icon is selected -->
             <template if:true={showSldsIconInput}>
                 <lightning-input 
                     type={propInputs.relatedListIcon.type}
@@ -55,84 +68,47 @@
                 </lightning-input>
             </template>
 
-        <lightning-input 
-            type={propInputs.relatedListLabel.type}
-            label={propInputs.relatedListLabel.label}
-            value={propInputs.relatedListLabel.value}
-            onblur={handleRelatedListLabelChange}
-            data-key={propInputs.relatedListLabel.key}
-            field-level-help={propInputs.relatedListLabel.help}
-            required={propInputs.relatedListLabel.required}
-            class={propInputs.relatedListLabel.classes}>
-        </lightning-input>
+            <lightning-input 
+                type={propInputs.relatedListLabel.type}
+                label={propInputs.relatedListLabel.label}
+                value={propInputs.relatedListLabel.value}
+                onblur={handleRelatedListLabelChange}
+                data-key={propInputs.relatedListLabel.key}
+                field-level-help={propInputs.relatedListLabel.help}
+                required={propInputs.relatedListLabel.required}
+                class={propInputs.relatedListLabel.classes}>
+            </lightning-input>
 
 
-            <!-- Action Buttons Section (moved from Display Options) -->
-            <div class="slds-m-bottom_large slds-m-top_large">
-                <h3 class="slds-text-heading_small slds-m-bottom_small">Action Buttons</h3>
+            <!-- Record Linking Section - Hidden for Files type -->
+            <template if:true={showRecordLinkingSettings}>
+                <div class="slds-m-bottom_large">
+                    <h3 class="slds-text-heading_small slds-m-bottom_small">Record Linking</h3>
 
-                <lightning-input 
-                    type={propInputs.showViewMore.type}
-                    label={propInputs.showViewMore.label}
-                    checked={propInputs.showViewMore.value}
-                    onchange={handleShowViewMoreChange}
-                    data-key={propInputs.showViewMore.key}
-                    field-level-help={propInputs.showViewMore.help}
-                    required={propInputs.showViewMore.required}
-                    class={propInputs.showViewMore.classes}>
-                </lightning-input>
+                    <lightning-input 
+                        type={propInputs.recordPageUrl.type}
+                        label={propInputs.recordPageUrl.label}
+                        value={propInputs.recordPageUrl.value}
+                        onblur={handleRecordPageUrlChange}
+                        data-key={propInputs.recordPageUrl.key}
+                        field-level-help={propInputs.recordPageUrl.help}
+                        required={propInputs.recordPageUrl.required}
+                        class={propInputs.recordPageUrl.classes}
+                        placeholder="/contact/:recordId">
+                    </lightning-input>
 
-                <lightning-input 
-                    type={propInputs.showViewAll.type}
-                    label={propInputs.showViewAll.label}
-                    checked={propInputs.showViewAll.value}
-                    onchange={handleShowViewAllChange}
-                    data-key={propInputs.showViewAll.key}
-                    field-level-help={propInputs.showViewAll.help}
-                    required={propInputs.showViewAll.required}
-                    class={propInputs.showViewAll.classes}>
-                </lightning-input>
-
-                <lightning-input 
-                    type={propInputs.viewAllUrl.type}
-                    label={propInputs.viewAllUrl.label}
-                    value={propInputs.viewAllUrl.value}
-                    onblur={handleViewAllUrlChange}
-                    data-key={propInputs.viewAllUrl.key}
-                    field-level-help={propInputs.viewAllUrl.help}
-                    required={propInputs.viewAllUrl.required}
-                    class={propInputs.viewAllUrl.classes}
-                    placeholder="/case/Case/My_Cases">
-                </lightning-input>
-            </div>
-
-            <!-- Record Linking Section (moved from Display Options) -->
-            <div class="slds-m-bottom_large">
-                <h3 class="slds-text-heading_small slds-m-bottom_small">Record Linking</h3>
-
-                <lightning-input 
-                    type={propInputs.recordPageUrl.type}
-                    label={propInputs.recordPageUrl.label}
-                    value={propInputs.recordPageUrl.value}
-                    onblur={handleRecordPageUrlChange}
-                    data-key={propInputs.recordPageUrl.key}
-                    field-level-help={propInputs.recordPageUrl.help}
-                    required={propInputs.recordPageUrl.required}
-                    class={propInputs.recordPageUrl.classes}
-                    placeholder="/contact/:recordId">
-                </lightning-input>
-
-                <lightning-input 
-                    type={propInputs.enableRecordLinking.type}
-                    label={propInputs.enableRecordLinking.label}
-                    checked={propInputs.enableRecordLinking.value}
-                    onchange={handleEnableRecordLinkingChange}
-                    data-key={propInputs.enableRecordLinking.key}
-                    field-level-help={propInputs.enableRecordLinking.help}
-                    required={propInputs.enableRecordLinking.required}
-                    class={propInputs.enableRecordLinking.classes}>
-                </lightning-input>
-            </div>
+                    <lightning-input 
+                        type={propInputs.enableRecordLinking.type}
+                        label={propInputs.enableRecordLinking.label}
+                        checked={propInputs.enableRecordLinking.value}
+                        onchange={handleEnableRecordLinkingChange}
+                        data-key={propInputs.enableRecordLinking.key}
+                        field-level-help={propInputs.enableRecordLinking.help}
+                        required={propInputs.enableRecordLinking.required}
+                        class={propInputs.enableRecordLinking.classes}>
+                    </lightning-input>
+                </div>
+            </template>
 
             <!-- Debug Configuration Section -->
             <div class="slds-m-bottom_large slds-m-top_large">
@@ -149,13 +125,14 @@
                     class={propInputs.showDebugInfo.classes}>
                 </lightning-input>
             </div>
-
         </lightning-tab>
 
-        <!-- ===== TABLE SETTINGS TAB (with Data Source moved here) ===== -->
-        <lightning-tab label="Table Settings">
-
-            <!-- Data Source Selection -->
+        <!-- ===== TABLE SETTINGS TAB (for Standard and Articles) ===== -->
+<template if:true={showTableSettings}>
+    <lightning-tab label="Table Settings">
+        
+        <!-- Data Source Selection - ONLY for Standard -->
+        <template if:true={isStandardType}>
             <div class="slds-m-bottom_large">
                 <h3 class="slds-text-heading_small slds-m-bottom_small">Data Source Selection</h3>
                 
@@ -247,7 +224,7 @@
                 </div>
             </template>
 
-            <!-- Display Mode Selection -->
+            <!-- Display Mode Selection - ONLY for Standard -->
             <div class="slds-m-bottom_large slds-m-top_large">
                 <h3 class="slds-text-heading_small slds-m-bottom_small">Display Mode</h3>
                 
@@ -263,24 +240,63 @@
                     class={propInputs.displayMode.classes}>
                 </lightning-select>
             </div>
+        </template>
 
-            <!-- Common Display Settings -->
-            <div class="slds-m-bottom_large">
-                <h3 class="slds-text-heading_small slds-m-bottom_small">Display Settings</h3>
+        <!-- Display Settings - SHARED between Standard and Articles -->
+        <div class="slds-m-bottom_large">
+            <h3 class="slds-text-heading_small slds-m-bottom_small">Display Settings</h3>
 
+            <lightning-input 
+                type={propInputs.initialRecordsToLoad.type}
+                label={propInputs.initialRecordsToLoad.label}
+                value={propInputs.initialRecordsToLoad.value}
+                onchange={handleInitialRecordsToLoadChange}
+                data-key={propInputs.initialRecordsToLoad.key}
+                field-level-help={propInputs.initialRecordsToLoad.help}
+                required={propInputs.initialRecordsToLoad.required}
+                class={propInputs.initialRecordsToLoad.classes}
+                min="1"
+                max="50">
+            </lightning-input>
+
+            <lightning-input 
+                type={propInputs.showViewMore.type}
+                label={propInputs.showViewMore.label}
+                checked={propInputs.showViewMore.value}
+                onchange={handleShowViewMoreChange}
+                data-key={propInputs.showViewMore.key}
+                field-level-help={propInputs.showViewMore.help}
+                required={propInputs.showViewMore.required}
+                class={propInputs.showViewMore.classes}>
+            </lightning-input>
+
+            <!-- View All settings only for Standard type -->
+            <template if:true={showViewAllSettings}>
                 <lightning-input 
-                    type={propInputs.initialRecordsToLoad.type}
-                    label={propInputs.initialRecordsToLoad.label}
-                    value={propInputs.initialRecordsToLoad.value}
-                    onchange={handleInitialRecordsToLoadChange}
-                    data-key={propInputs.initialRecordsToLoad.key}
-                    field-level-help={propInputs.initialRecordsToLoad.help}
-                    required={propInputs.initialRecordsToLoad.required}
-                    class={propInputs.initialRecordsToLoad.classes}
-                    min="1"
-                    max="50">
+                    type={propInputs.showViewAll.type}
+                    label={propInputs.showViewAll.label}
+                    checked={propInputs.showViewAll.value}
+                    onchange={handleShowViewAllChange}
+                    data-key={propInputs.showViewAll.key}
+                    field-level-help={propInputs.showViewAll.help}
+                    required={propInputs.showViewAll.required}
+                    class={propInputs.showViewAll.classes}>
                 </lightning-input>
 
+                <lightning-input 
+                    type={propInputs.viewAllUrl.type}
+                    label={propInputs.viewAllUrl.label}
+                    value={propInputs.viewAllUrl.value}
+                    onblur={handleViewAllUrlChange}
+                    data-key={propInputs.viewAllUrl.key}
+                    field-level-help={propInputs.viewAllUrl.help}
+                    required={propInputs.viewAllUrl.required}
+                    class={propInputs.viewAllUrl.classes}
+                    placeholder="/case/Case/My_Cases">
+                </lightning-input>
+            </template>
+
+            <template if:true={showInfiniteLoadingOption}>
                 <lightning-input 
                     type={propInputs.enableInfiniteLoading.type}
                     label={propInputs.enableInfiniteLoading.label}
@@ -291,9 +307,11 @@
                     required={propInputs.enableInfiniteLoading.required}
                     class={propInputs.enableInfiniteLoading.classes}>
                 </lightning-input>
-            </div>
+            </template>
+        </div>
 
-            <!-- List View Settings -->
+        <!-- List View Settings - ONLY for Standard -->
+        <template if:true={isStandardType}>
             <template if:true={showTableOnlySettings}>
                 <div class="slds-m-bottom_large">
                     <h3 class="slds-text-heading_small slds-m-bottom_small">List View Settings</h3>
@@ -345,7 +363,84 @@
                     </lightning-input>
                 </div>
             </template>
-        </lightning-tab>
+        </template>
+        
+    </lightning-tab>
+</template>
+
+        <!-- ===== FILES TYPE: FILES SETTINGS TAB ===== -->
+        <template if:true={showFilesSettings}>
+            <lightning-tab label="Files Settings">
+                
+                <!-- Display Mode Selection -->
+                <div class="slds-m-bottom_large">
+                    <h3 class="slds-text-heading_small slds-m-bottom_small">Display Mode</h3>
+                    
+                    <lightning-select
+                        name={propInputs.displayModeFiles.key}
+                        label={propInputs.displayModeFiles.label}
+                        value={propInputs.displayModeFiles.value}
+                        options={propInputs.displayModeFiles.options}
+                        onchange={handleDisplayModeFilesChange}
+                        required={propInputs.displayModeFiles.required}
+                        data-key={propInputs.displayModeFiles.key}
+                        field-level-help={propInputs.displayModeFiles.help}
+                        class={propInputs.displayModeFiles.classes}>
+                    </lightning-select>
+                </div>
+                
+                <!-- Display Settings -->
+                <div class="slds-m-bottom_large">
+                    <h3 class="slds-text-heading_small slds-m-bottom_small">Display Settings</h3>
+
+                    <lightning-input 
+                        type={propInputs.initialRecordsToLoad.type}
+                        label={propInputs.initialRecordsToLoad.label}
+                        value={propInputs.initialRecordsToLoad.value}
+                        onchange={handleInitialRecordsToLoadChange}
+                        data-key={propInputs.initialRecordsToLoad.key}
+                        field-level-help={propInputs.initialRecordsToLoad.help}
+                        required={propInputs.initialRecordsToLoad.required}
+                        class={propInputs.initialRecordsToLoad.classes}
+                        min="1"
+                        max="50">
+                    </lightning-input>
+
+                    <lightning-input 
+                        type={propInputs.showViewMore.type}
+                        label={propInputs.showViewMore.label}
+                        checked={propInputs.showViewMore.value}
+                        onchange={handleShowViewMoreChange}
+                        data-key={propInputs.showViewMore.key}
+                        field-level-help={propInputs.showViewMore.help}
+                        required={propInputs.showViewMore.required}
+                        class={propInputs.showViewMore.classes}>
+                    </lightning-input>
+                </div>
+            </lightning-tab>
+        </template>
+
+        <!-- ===== ARTICLES TYPE: ARTICLES SETTINGS TAB ===== -->
+        <template if:true={showArticlesSettings}>
+            <lightning-tab label="Articles Settings">
+                <div class="slds-m-bottom_large">
+                    <h3 class="slds-text-heading_small slds-m-bottom_small">Articles Display Configuration</h3>
+
+                    <lightning-input 
+                        type={propInputs.initialArticlesToShow.type}
+                        label={propInputs.initialArticlesToShow.label}
+                        value={propInputs.initialArticlesToShow.value}
+                        onchange={handleInitialArticlesToShowChange}
+                        data-key={propInputs.initialArticlesToShow.key}
+                        field-level-help={propInputs.initialArticlesToShow.help}
+                        required={propInputs.initialArticlesToShow.required}
+                        class={propInputs.initialArticlesToShow.classes}
+                        min="1"
+                        max="10">
+                    </lightning-input>
+                </div>
+            </lightning-tab>
+        </template>
     </lightning-tabset>
 
     <!-- ===== SOQL QUERY MODAL ===== -->

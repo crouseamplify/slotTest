@@ -1,9 +1,12 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import executeQuery from '@salesforce/apex/SlotTestController.executeQuery';
-import getFieldInfo from '@salesforce/apex/SlotTestController.getFieldInfo';
-import getRelatedListInfo from '@salesforce/apex/SlotTestController.getRelatedListInfo';
-import getObjectTypeFromRecordId from '@salesforce/apex/SlotTestController.getObjectTypeFromRecordId';
+import executeQuery from '@salesforce/apex/RelatedListLWRController.executeQuery';
+import getFieldInfo from '@salesforce/apex/RelatedListLWRController.getFieldInfo';
+import getRelatedListInfo from '@salesforce/apex/RelatedListLWRController.getRelatedListInfo';
+import getObjectTypeFromRecordId from '@salesforce/apex/RelatedListLWRController.getObjectTypeFromRecordId';
+import getCaseArticles from '@salesforce/apex/RelatedListLWRController.getCaseArticles';
+import getFiles from '@salesforce/apex/RelatedListLWRController.getFiles';
+import getImageAsBase64 from '@salesforce/apex/RelatedListLWRController.getImageAsBase64';
 
 /**
  * @slot iconSlot
@@ -34,6 +37,14 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     @track detectedObjectType = null;
     @track sortedBy = '';
     @track sortDirection = 'asc';
+    // File-specific state
+    @track showImageModal = false;
+    @track modalImageUrl = '';
+    @track modalDownloadUrl = '';
+    @track modalImageName = '';
+    @track modalImageSize = '';
+    @track modalImageLoadError = '';
+    @track isLoadingModalImage = false;
     
     // Performance and state tracking
     lastDataSignature = '';
@@ -230,12 +241,43 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     get enableInfiniteLoading() {
         return this.configObj.enableInfiniteLoading || false;
     }
+
+    get relatedListType() {
+        return this.configObj.relatedListType || 'standard';
+    }
+
+    get isStandardType() {
+        return this.relatedListType === 'standard';
+    }
+
+    get isFilesType() {
+        return this.relatedListType === 'files';
+    }
+
+    get isArticlesType() {
+        return this.relatedListType === 'articles';
+    }
+
+    get showArticles() {
+        // Articles now use the regular table display
+        return false;
+    }
     
     // ===== SMART CHANGE DETECTION =====
     
     get dataSignature() {
         // Create signature for data-affecting properties based on mode
-        if (this.useCustomQuery) {
+        if (this.isArticlesType) {
+            return JSON.stringify({
+                mode: 'articles',
+                recordId: this.currentRecordId
+            });
+        } else if (this.isFilesType) {
+            return JSON.stringify({
+                mode: 'files',
+                recordId: this.currentRecordId
+            });
+        } else if (this.useCustomQuery) {
             // SOQL mode signature
             return JSON.stringify({
                 mode: 'soql',
@@ -343,12 +385,44 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         return this.configObj.displayMode || 'table';
     }
 
+    get displayModeFiles() {
+        return this.configObj.displayModeFiles || 'cards';
+    }
+
+
     get showTable() {
-        return this.displayMode === 'table' && !this.isLoading && !this.error && this.hasData && this.displayedRecords.length > 0;
+        return ((this.displayMode === 'table' && this.isStandardType) || 
+                (this.displayModeFiles === 'table' && this.isFilesType) ||
+                this.isArticlesType) &&
+            !this.isLoading && 
+            !this.error && 
+            this.hasData && 
+            this.displayedRecords.length > 0;
     }
 
     get showCards() {
-        return this.displayMode === 'cards' && !this.isLoading && !this.error && this.hasData && this.displayedRecords.length > 0;
+        return this.displayMode === 'cards' && 
+            !this.isLoading && 
+            !this.error && 
+            this.hasData && 
+            this.displayedRecords.length > 0 &&
+            !this.isArticlesType; // Don't show cards for articles
+    }
+
+    handleRowAction(event) {
+        const actionName = event.detail.action.name;
+        const row = event.detail.row;
+        
+        this.debugLog('Row action:', actionName, row);
+        
+        if (actionName === 'viewFile') {
+            // Handle file view action
+            if (row.isImage) {
+                this.handleImagePreview(row.contentDocumentId, row.title, row.formattedSize, row.downloadUrl);
+            } else {
+                this.handleDirectDownload(row.downloadUrl, row.title);
+            }
+        }
     }
 
     get firstFieldName() {
@@ -380,7 +454,8 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
 
     get showLoadMoreButton() {
-        return this.showTable && this.hasMoreRecords && this.showViewMore;
+        const hasContent = this.showTable || this.showArticles;
+        return hasContent && this.hasMoreRecords && this.showViewMore;
     }
     
     get loadMoreButtonLabel() {
@@ -408,8 +483,18 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     
     // Validation
     get hasValidConfiguration() {
-        if (this.useCustomQuery) {
-            // SOQL mode validation
+        if (this.isArticlesType) {
+            // Articles mode validation - just needs recordId
+            const hasRecordId = !!(this.currentRecordId);
+            this.debugLog('Articles Validation:', { hasRecordId });
+            return hasRecordId;
+        } else if (this.isFilesType) {
+            // Files mode validation - just needs recordId
+            const hasRecordId = !!(this.currentRecordId);
+            this.debugLog('Files Validation:', { hasRecordId });
+            return hasRecordId;
+        } else if (this.useCustomQuery) {
+            // SOQL mode validation (existing logic)
             const hasQuery = !!(this.soqlQuery && this.soqlQuery.trim() !== '');
             const usesRecordIdVariable = this.soqlQuery && this.soqlQuery.includes('$recordId');
             const hasRecordId = !!(this.currentRecordId);
@@ -425,7 +510,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             
             return hasQuery && recordIdValid;
         } else {
-            // ARL mode validation
+            // ARL mode validation (existing logic)
             const hasRelatedListName = !!(this.relatedListName);
             const hasRecordId = !!(this.currentRecordId);
             const hasDetectedObjectType = !!(this.detectedObjectType);
@@ -446,6 +531,19 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         }
     }
     
+    get showFilesGrid() {
+        return this.isFilesType && 
+            this.displayModeFiles === 'cards' &&
+            !this.isLoading && 
+            !this.error && 
+            this.hasData && 
+            this.displayedRecords.length > 0;
+    }
+
+    get hasModalImageError() {
+        return !!this.modalImageLoadError;
+    }
+
     // Debug properties
     get showDebugInfo() {
         return this.configObj.showDebugInfo || false;
@@ -539,20 +637,24 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         this.debugConfiguration();
         
         if (!this.hasValidConfiguration) {
-            this.debugLog(`Invalid configuration for ${this.dataSourceMode} mode, skipping data load`);
+            this.debugLog(`Invalid configuration, skipping data load`);
             this.clearData();
             return;
         }
         
         const startTime = performance.now();
-        this.debugLog(`Loading data using ${this.dataSourceMode} mode`);
+        this.debugLog(`Loading data for type: ${this.relatedListType}`);
         
         this.isLoading = true;
         this.error = null;
         
         try {
-            // Route to appropriate data loading method based on mode
-            if (this.useCustomQuery) {
+            // Route to appropriate data loading method based on type
+            if (this.isArticlesType) {
+                await this.loadArticles();
+            } else if (this.isFilesType) {
+                await this.loadFiles(); // ADD THIS
+            } else if (this.useCustomQuery) {
                 await this.loadDataWithSOQL();
             } else {
                 await this.loadDataWithARL();
@@ -564,11 +666,10 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             
             const endTime = performance.now();
             this.lastLoadTime = Math.round(endTime - startTime);
-            this.debugLog(`Data loading (${this.dataSourceMode}) took ${this.lastLoadTime}ms`);
-            this.debugLog(`Loaded ${this.allRecords.length} records successfully`);
+            this.debugLog(`Data loading took ${this.lastLoadTime}ms`);
             
         } catch (error) {
-            this.logError(`Error loading data in ${this.dataSourceMode} mode:`, error);
+            this.logError(`Error loading data:`, error);
             this.error = error.body?.message || error.message || 'Unknown error occurred';
             this.clearData();
         } finally {
@@ -996,6 +1097,188 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         return cardData;
     }
 
+    async loadArticles() {
+        this.debugLog('Loading Knowledge Articles for case:', this.currentRecordId);
+        
+        if (!this.currentRecordId) {
+            throw new Error('Record ID is required for Knowledge Articles');
+        }
+        
+        try {
+            const articles = await getCaseArticles({ caseId: this.currentRecordId });
+            
+            this.debugLog(`Retrieved ${articles.length} articles`);
+            
+            // Build columns for articles - single "Title" column
+            this.columns = [{
+                label: 'Title',
+                fieldName: this.enableRecordLinking && this.recordPageUrl ? 'recordUrl' : 'title',
+                type: this.enableRecordLinking && this.recordPageUrl ? 'url' : 'text',
+                typeAttributes: this.enableRecordLinking && this.recordPageUrl ? {
+                    label: { fieldName: 'title' },
+                    target: '_blank'
+                } : undefined,
+                sortable: !this.columnSortingDisabled,
+                wrapText: true
+            }];
+            
+            // Transform articles to match the datatable structure
+            this.allRecords = articles.map(article => ({
+                Id: article.id,
+                title: article.title,
+                urlName: article.urlName,
+                recordUrl: this.enableRecordLinking && this.recordPageUrl ? 
+                    this.buildArticleUrl(article.urlName, article.id) : undefined
+            }));
+            
+            // Reset pagination
+            this.currentOffset = 0;
+            this.updateDisplayedRecords();
+            
+            this.debugLog(`Loaded ${this.allRecords.length} articles, displaying ${this.displayedRecords.length}`);
+            
+        } catch (error) {
+            this.logError('Error loading articles:', error);
+            throw error;
+        }
+    }
+
+    async loadFiles() {
+        this.debugLog('Loading Files for record:', this.currentRecordId);
+        
+        if (!this.currentRecordId) {
+            throw new Error('Record ID is required for Files');
+        }
+        
+        try {
+            const files = await getFiles({
+                recordId: this.currentRecordId,
+                sortField: 'CreatedDate',
+                sortDirection: 'DESC',
+                limitCount: 50
+            });
+            
+            this.debugLog(`Retrieved ${files.length} files`);
+            
+            // Build columns for table view
+            this.columns = [
+                {
+                    label: 'Name',
+                    fieldName: 'title',
+                    type: 'button',
+                    typeAttributes: {
+                        label: { fieldName: 'title' },
+                        name: 'viewFile',
+                        variant: 'base'
+                    },
+                    sortable: !this.columnSortingDisabled,
+                    wrapText: true
+                },
+                {
+                    label: 'Type',
+                    fieldName: 'fileExtension',
+                    type: 'text',
+                    fixedWidth: 80,
+                    sortable: !this.columnSortingDisabled
+                },
+                {
+                    label: 'Size',
+                    fieldName: 'formattedSize',
+                    type: 'text',
+                    fixedWidth: 100,
+                    sortable: !this.columnSortingDisabled
+                },
+                {
+                    label: 'Modified',
+                    fieldName: 'createdDate',
+                    type: 'date',
+                    typeAttributes: {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    },
+                    fixedWidth: 180,
+                    sortable: !this.columnSortingDisabled
+                }
+            ];
+            
+            // Store files directly
+            this.allRecords = files || [];
+            
+            // Reset pagination
+            this.currentOffset = 0;
+            this.updateDisplayedRecords();
+            
+            this.debugLog(`Loaded ${this.allRecords.length} files, displaying ${this.displayedRecords.length}`);
+            
+        } catch (error) {
+            this.logError('Error loading files:', error);
+            throw error;
+        }
+    }
+
+    buildArticleUrl(urlName, articleId) {
+        // If recordPageUrl is NOT configured, return null (no linking)
+        if (!this.recordPageUrl || this.recordPageUrl.trim() === '') {
+            this.debugLog('No recordPageUrl configured - articles will not link');
+            return null;
+        }
+        
+        const siteBaseUrl = this.getSiteBaseUrl();
+        let articlePath = this.recordPageUrl;
+        
+        // Replace placeholders
+        if (articlePath.includes(':urlName')) {
+            articlePath = articlePath.replace(':urlName', urlName);
+        } else if (articlePath.includes('{urlName}')) {
+            articlePath = articlePath.replace('{urlName}', urlName);
+        }
+        
+        if (articlePath.includes(':recordId')) {
+            articlePath = articlePath.replace(':recordId', articleId);
+        } else if (articlePath.includes('{recordId}')) {
+            articlePath = articlePath.replace('{recordId}', articleId);
+        }
+        
+        // Ensure path starts with /
+        const cleanPath = articlePath.startsWith('/') ? articlePath : '/' + articlePath;
+        const fullUrl = siteBaseUrl + cleanPath;
+        
+        this.debugLog('Built article URL from recordPageUrl:', fullUrl);
+        return fullUrl;
+    }
+
+    getSiteBaseUrl() {
+        const url = new URL(window.location.href);
+        
+        this.debugLog('Getting site base URL from:', window.location.href);
+        
+        // For Experience Cloud sites, capture the full site path
+        if (url.hostname.includes('.my.site.com') || 
+            url.hostname.includes('.force.com') ||
+            url.hostname.includes('salesforce-experience.com')) {
+            
+            const pathParts = url.pathname.split('/').filter(part => part !== '');
+            
+            if (pathParts.length > 0) {
+                const sitePath = pathParts[0];
+                return `${url.origin}/${sitePath}`;
+            }
+            
+            return url.origin;
+        } else {
+            // Custom domain
+            const pathParts = url.pathname.split('/').filter(part => part !== '');
+            if (pathParts.length > 0) {
+                return `${url.origin}/${pathParts[0]}`;
+            }
+            
+            return url.origin;
+        }
+    }
+
     // ===== SHARED UTILITY METHODS =====
     
     clearData() {
@@ -1236,41 +1519,31 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
 
     handleLoadMore(event) {
         try {
-            this.debugLog('Infinite loading triggered');
+            this.debugLog('Load more triggered');
             
-            // Prevent loading if we're already loading or no more records
             if (this.isLoadingMore || !this.hasMoreRecords) {
                 return;
             }
             
             this.isLoadingMore = true;
             
-            // Load next batch of records
             this.currentOffset += this.initialRecordsToLoad;
             this.updateDisplayedRecords();
             
-            // Small delay to show loading state
             setTimeout(() => {
                 this.isLoadingMore = false;
             }, 300);
             
         } catch (error) {
-            this.logError('Error in infinite loading:', error);
+            this.logError('Error in load more:', error);
             this.isLoadingMore = false;
         }
     }
 
     navigateToViewAllUrl() {
-        const baseUrl = window.location.origin;
-        
-        // For LWR sites, get just the site name (first path segment)
-        const pathSegments = window.location.pathname.split('/').filter(segment => segment);
-        const sitePath = pathSegments.length > 0 ? '/' + pathSegments[0] : '';
-        
-        // Ensure viewAllUrl starts with /
+        const siteBaseUrl = this.getSiteBaseUrl();
         const cleanUrl = this.viewAllUrl.startsWith('/') ? this.viewAllUrl : '/' + this.viewAllUrl;
-        
-        const fullUrl = baseUrl + sitePath + cleanUrl;
+        const fullUrl = siteBaseUrl + cleanUrl;
         
         this.debugLog('View All URL:', fullUrl);
         
@@ -1280,5 +1553,104 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
                 url: fullUrl
             }
         });
+    }
+    
+    handleFileClick(event) {
+        event.preventDefault();
+        const target = event.currentTarget;
+        const fileName = target.dataset.name;
+        const fileSize = target.dataset.size;
+        const contentDocumentId = target.dataset.id;
+        const isImage = target.dataset.isImage === 'true';
+        const downloadUrl = target.dataset.downloadUrl;
+        
+        this.debugLog('File clicked:', { fileName, isImage, contentDocumentId });
+        
+        if (isImage) {
+            this.handleImagePreview(contentDocumentId, fileName, fileSize, downloadUrl);
+        } else {
+            this.handleDirectDownload(downloadUrl, fileName);
+        }
+    }
+
+    async handleImagePreview(contentDocumentId, fileName, fileSize, downloadUrl) {
+        this.modalImageName = fileName;
+        this.modalImageSize = fileSize;
+        this.modalImageLoadError = '';
+        this.modalImageUrl = '';
+        this.modalDownloadUrl = downloadUrl;
+        this.isLoadingModalImage = true;
+        this.showImageModal = true;
+        
+        try {
+            const base64Url = await getImageAsBase64({ contentDocumentId });
+            
+            if (base64Url) {
+                this.modalImageUrl = base64Url;
+                this.isLoadingModalImage = false;
+                this.debugLog('Image loaded successfully');
+            } else {
+                throw new Error('No image data returned');
+            }
+        } catch (error) {
+            this.logError('Error loading image:', error);
+            this.modalImageLoadError = 'Failed to load image: ' + (error.body?.message || error.message);
+            this.isLoadingModalImage = false;
+        }
+    }
+
+    handleDirectDownload(downloadUrl, fileName) {
+        if (!downloadUrl) {
+            this.logError('No download URL available for file:', fileName);
+            return;
+        }
+        
+        this.debugLog('Initiating download:', fileName);
+        
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = fileName || 'download';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    handleCloseModal() {
+        this.showImageModal = false;
+        this.isLoadingModalImage = false;
+        this.modalImageUrl = '';
+        this.modalDownloadUrl = '';
+        this.modalImageName = '';
+        this.modalImageSize = '';
+        this.modalImageLoadError = '';
+    }
+
+    handleModalBackdropClick(event) {
+        if (event.target.classList.contains('slds-backdrop')) {
+            this.handleCloseModal();
+        }
+    }
+
+    handleDownloadFromModal() {
+        if (this.modalDownloadUrl) {
+            this.handleDirectDownload(this.modalDownloadUrl, this.modalImageName);
+        }
+    }
+
+    handleModalImageError(event) {
+        const img = event.target;
+        const failedUrl = img.src;
+        
+        this.modalImageLoadError = `Failed to load image: ${failedUrl}`;
+        
+        // Try fallback to download URL if different
+        if (failedUrl === this.modalImageUrl && this.modalDownloadUrl && failedUrl !== this.modalDownloadUrl) {
+            this.modalImageUrl = this.modalDownloadUrl;
+        }
+    }
+
+    handleModalImageLoad() {
+        this.modalImageLoadError = '';
     }
 }

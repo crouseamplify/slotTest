@@ -22,6 +22,22 @@ export default class SlotTestCpe extends LightningElement {
             doSetDefaultValue: true,
             classes: defaultCSSClasses
         },
+        relatedListType: {
+            key: 'relatedListType',
+            label: 'Related List Type',
+            type: 'select',
+            help: 'Choose the type of related list to display. Standard uses SOQL or Related List API. Files displays attached files. Knowledge Articles shows linked articles.',
+            required: false,
+            valuePath: 'relatedListType',
+            value: 'standard',
+            doSetDefaultValue: true,
+            classes: defaultCSSClasses,
+            options: [
+                { label: 'Standard', value: 'standard' },
+                { label: 'Files', value: 'files' },
+                { label: 'Knowledge Articles', value: 'articles' }
+            ]
+        },
         numberOfSlots: {
             key: 'numberOfSlots',
             label: 'Number of Action Slots',
@@ -276,7 +292,6 @@ export default class SlotTestCpe extends LightningElement {
             doSetDefaultValue: true,
             classes: defaultCSSClasses
         }, 
-
         showDebugInfo: {
             key: 'showDebugInfo',
             label: 'Show Debug Information',
@@ -303,12 +318,64 @@ export default class SlotTestCpe extends LightningElement {
                 { label: 'Cards', value: 'cards' }
             ]
         },
+        displayModeFiles: {
+            key: 'displayModeFiles',
+            label: 'Display Mode',
+            type: 'select',
+            help: 'Choose how to display files. Grid shows files in a 2-column card layout. Table displays files in a sortable list.',
+            required: false,
+            valuePath: 'displayModeFiles',
+            value: 'cards',
+            doSetDefaultValue: true,
+            classes: defaultCSSClasses,
+            options: [
+                { label: 'Grid', value: 'cards' },
+                { label: 'Table', value: 'table' }
+            ]
+        }
     };
 
     get recordIdPlaceholder() {
         return this.propInputs.recordId.value === '{!recordId}' || !this.propInputs.recordId.value ? 
                'Use {!recordId} unless debugging a specific record' : '';
     }
+
+    // Computed properties for conditional tab display
+    get showStandardSettings() {
+        return this.propInputs.relatedListType.value === 'standard';
+    }
+
+
+    get showFilesSettings() {
+        return this.propInputs.relatedListType.value === 'files';
+    }
+
+    get showTableSettings() {
+        return this.propInputs.relatedListType.value === 'standard' || 
+            this.propInputs.relatedListType.value === 'articles';
+    }
+
+    // Conditional visibility for action buttons
+    get showViewAllSettings() {
+        // Hide View All for Files and Articles - only show for Standard
+        return this.propInputs.relatedListType.value === 'standard';
+    }
+
+    // Conditional visibility for record linking
+    get showRecordLinkingSettings() {
+        // Hide Record Linking for Files - show for Standard and Articles
+        return this.propInputs.relatedListType.value !== 'files';
+    }
+
+    get isStandardType() {
+        return this.propInputs.relatedListType.value === 'standard';
+    }
+
+    get showInfiniteLoadingOption() {
+        // Hide infinite loading ONLY for Files type
+        return this.propInputs.relatedListType.value !== 'files';
+    }
+
 
     @api
     get value() {
@@ -407,8 +474,8 @@ export default class SlotTestCpe extends LightningElement {
     }
 
     get showSldsIconInput() {
-    return this.propInputs.iconType.value === 'slds';
-}
+        return this.propInputs.iconType.value === 'slds';
+    }
 
     get showIconSlotMessage() {
         return this.propInputs.iconType.value === 'slot';
@@ -469,6 +536,19 @@ export default class SlotTestCpe extends LightningElement {
             }
         } catch (error) {
             console.error('Error in handleRecordIdChange:', error);
+        }
+    }
+
+    handleRelatedListTypeChange(e) {
+        try {
+            const newValue = this.getEventValue(e);
+            this.propInputs.relatedListType.value = newValue;
+            let tmpvalueObj = this.getValueObj();
+            tmpvalueObj.relatedListType = this.propInputs.relatedListType.value;
+            this.dispatchEvent(new CustomEvent("valuechange", 
+                {detail: {value: JSON.stringify(tmpvalueObj)}}));
+        } catch (error) {
+            console.error('Error in handleRelatedListTypeChange:', error);
         }
     }
 
@@ -550,6 +630,19 @@ export default class SlotTestCpe extends LightningElement {
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
             console.error('Error in handleDisplayModeChange:', error);
+        }
+    }
+
+    handleDisplayModeFilesChange(e) {
+        try {
+            const newValue = this.getEventValue(e, false);
+            this.propInputs.displayModeFiles.value = newValue;
+            let tmpvalueObj = this.getValueObj();
+            tmpvalueObj.displayModeFiles = this.propInputs.displayModeFiles.value;
+            this.dispatchEvent(new CustomEvent("valuechange", 
+                {detail: {value: JSON.stringify(tmpvalueObj)}}));
+        } catch (error) {
+            console.error('Error in handleDisplayModeFilesChange:', error);
         }
     }
 
