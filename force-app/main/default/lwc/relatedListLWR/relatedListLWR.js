@@ -58,12 +58,24 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
 
     // Performance metrics tracking
     _perfMetrics = {
+        // Batch 1 metrics (already optimized)
         relatedListLabelAccessCount: 0,
         relatedListLabelCacheHits: 0,
         customFieldNamesListAccessCount: 0,
         customFieldNamesListCacheHits: 0,
         sortOperationCount: 0,
         sortOptimizationSavings: 0,
+
+        // Batch 2 metrics
+        configGetterAccessCount: 0,  // Fix #9: Track accesses to config-only getters
+        configGetterCacheHits: 0,     // Fix #9: Track cache hits
+        flattenARLCallCount: 0,       // Fix #10: Track ARL field flattening calls
+        flattenARLFieldsProcessed: 0, // Fix #10: Track total fields processed
+        infiniteScrollTriggerCount: 0, // Fix #11: Track scroll handler triggers
+        cardDataGenerationCount: 0,    // Fix #12: Track card data generation
+        cardDataWastedCount: 0,        // Fix #12: Track wasted card data (when not in cards mode)
+
+        // General metrics
         renderCallbackCount: 0,
         lastRenderTime: 0
     };
@@ -100,6 +112,21 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     // Fix #7: Cache customFieldNamesList
     _cachedCustomFieldNamesList = [];
     _lastFieldNamesString = '';
+
+    // Fix #9: Cache config-only getters
+    _cachedConfigGetters = {
+        showViewMore: null,
+        showViewAll: null,
+        viewAllUrl: null,
+        hideCheckboxColumn: null,
+        showRowNumberColumn: null,
+        resizeColumnDisabled: null,
+        columnSortingDisabled: null,
+        enableInfiniteLoading: null,
+        initialRecordsToLoad: null,
+        defaultColumnWidth: null
+    };
+    _lastConfigJSONForGetters = '';
     
     // ===== UTILITY METHODS FOR DEBUGGING =====
     
@@ -216,15 +243,35 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
     
     get showViewMore() {
-        return this.configObj.showViewMore || false;
+        this._perfMetrics.configGetterAccessCount++;
+
+        // Fix #9: Cache config-only getter
+        if (this.configJSONString !== this._lastConfigJSONForGetters) {
+            this._cachedConfigGetters.showViewMore = this.configObj.showViewMore || false;
+        } else {
+            this._perfMetrics.configGetterCacheHits++;
+        }
+        return this._cachedConfigGetters.showViewMore;
     }
-    
+
     get showViewAll() {
-        return this.configObj.showViewAll || false;
+        this._perfMetrics.configGetterAccessCount++;
+
+        // Fix #9: Cache config-only getter
+        if (this.configJSONString !== this._lastConfigJSONForGetters) {
+            this._cachedConfigGetters.showViewAll = this.configObj.showViewAll || false;
+        } else {
+            this._perfMetrics.configGetterCacheHits++;
+        }
+        return this._cachedConfigGetters.showViewAll;
     }
-    
+
     get viewAllUrl() {
-        return this.configObj.viewAllUrl || '';
+        // Fix #9: Cache config-only getter
+        if (this.configJSONString !== this._lastConfigJSONForGetters) {
+            this._cachedConfigGetters.viewAllUrl = this.configObj.viewAllUrl || '';
+        }
+        return this._cachedConfigGetters.viewAllUrl;
     }
     
     // Data Source Mode - KEY PROPERTY
@@ -304,31 +351,61 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     
     // Table Configuration
     get initialRecordsToLoad() {
-        return this.configObj.initialRecordsToLoad || 6;
+        // Fix #9: Cache config-only getter
+        if (this.configJSONString !== this._lastConfigJSONForGetters) {
+            this._cachedConfigGetters.initialRecordsToLoad = this.configObj.initialRecordsToLoad || 6;
+        }
+        return this._cachedConfigGetters.initialRecordsToLoad;
     }
-    
+
     get defaultColumnWidth() {
-        return this.configObj.defaultColumnWidth || null;
+        // Fix #9: Cache config-only getter
+        if (this.configJSONString !== this._lastConfigJSONForGetters) {
+            this._cachedConfigGetters.defaultColumnWidth = this.configObj.defaultColumnWidth || null;
+            // Mark that we've updated all cached getters
+            this._lastConfigJSONForGetters = this.configJSONString;
+        }
+        return this._cachedConfigGetters.defaultColumnWidth;
     }
     
     get hideCheckboxColumn() {
-        return this.configObj.hideCheckboxColumn !== undefined ? this.configObj.hideCheckboxColumn : true;
+        // Fix #9: Cache config-only getter
+        if (this.configJSONString !== this._lastConfigJSONForGetters) {
+            this._cachedConfigGetters.hideCheckboxColumn = this.configObj.hideCheckboxColumn !== undefined ? this.configObj.hideCheckboxColumn : true;
+        }
+        return this._cachedConfigGetters.hideCheckboxColumn;
     }
-    
+
     get showRowNumberColumn() {
-        return this.configObj.showRowNumberColumn !== undefined ? this.configObj.showRowNumberColumn : false;
+        // Fix #9: Cache config-only getter
+        if (this.configJSONString !== this._lastConfigJSONForGetters) {
+            this._cachedConfigGetters.showRowNumberColumn = this.configObj.showRowNumberColumn !== undefined ? this.configObj.showRowNumberColumn : false;
+        }
+        return this._cachedConfigGetters.showRowNumberColumn;
     }
-    
+
     get resizeColumnDisabled() {
-        return this.configObj.resizeColumnDisabled || false;
+        // Fix #9: Cache config-only getter
+        if (this.configJSONString !== this._lastConfigJSONForGetters) {
+            this._cachedConfigGetters.resizeColumnDisabled = this.configObj.resizeColumnDisabled || false;
+        }
+        return this._cachedConfigGetters.resizeColumnDisabled;
     }
 
     get columnSortingDisabled() {
-        return this.configObj.columnSortingDisabled || false;
+        // Fix #9: Cache config-only getter
+        if (this.configJSONString !== this._lastConfigJSONForGetters) {
+            this._cachedConfigGetters.columnSortingDisabled = this.configObj.columnSortingDisabled || false;
+        }
+        return this._cachedConfigGetters.columnSortingDisabled;
     }
-    
+
     get enableInfiniteLoading() {
-        return this.configObj.enableInfiniteLoading || false;
+        // Fix #9: Cache config-only getter
+        if (this.configJSONString !== this._lastConfigJSONForGetters) {
+            this._cachedConfigGetters.enableInfiniteLoading = this.configObj.enableInfiniteLoading || false;
+        }
+        return this._cachedConfigGetters.enableInfiniteLoading;
     }
 
     get relatedListType() {
@@ -1017,9 +1094,14 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
 
     flattenRelationshipFieldsForARL(record, sampleRecord) {
+        this._perfMetrics.flattenARLCallCount++;
+
         // Handle relationship fields by flattening the nested objects
         // This processes fields like "Account.Name" into "Account_Name"
-        Object.keys(sampleRecord || {}).forEach(key => {
+        const keysToProcess = Object.keys(sampleRecord || {});
+        this._perfMetrics.flattenARLFieldsProcessed += keysToProcess.length;
+
+        keysToProcess.forEach(key => {
             if (key.includes('.')) {
                 const parts = key.split('.');
                 const relationshipName = parts[0];
@@ -1225,10 +1307,17 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
     
     buildCardData(record) {
+        this._perfMetrics.cardDataGenerationCount++;
+
+        // Track if we're wasting effort (not in cards mode)
+        if (this.displayMode !== 'cards') {
+            this._perfMetrics.cardDataWastedCount++;
+        }
+
         if (!this.columns || this.columns.length === 0) {
             return { title: '', fields: [] };
         }
-        
+
         // Get first field value for title
         const firstCol = this.columns[0];
         let titleFieldName = firstCol.fieldName;
@@ -1564,6 +1653,13 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         this._perfMetrics.customFieldNamesListCacheHits = 0;
         this._perfMetrics.sortOperationCount = 0;
         this._perfMetrics.sortOptimizationSavings = 0;
+        this._perfMetrics.configGetterAccessCount = 0;
+        this._perfMetrics.configGetterCacheHits = 0;
+        this._perfMetrics.flattenARLCallCount = 0;
+        this._perfMetrics.flattenARLFieldsProcessed = 0;
+        this._perfMetrics.infiniteScrollTriggerCount = 0;
+        this._perfMetrics.cardDataGenerationCount = 0;
+        this._perfMetrics.cardDataWastedCount = 0;
 
         // Invalidate signature caches to force fresh comparison
         this._cachedDataSignature = null;
@@ -1580,6 +1676,8 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
 
     logPerformanceMetrics(label) {
         console.log(`\n========== PERFORMANCE METRICS ${label} ==========`);
+
+        console.log(`\n📊 BATCH 1 - Optimizations Applied:`);
         console.log(`✓ FIX #6: Cached relatedListLabel getter`);
         console.log(`  - Label accesses: ${this._perfMetrics.relatedListLabelAccessCount}`);
         console.log(`  - Cache hits: ${this._perfMetrics.relatedListLabelCacheHits}`);
@@ -1588,7 +1686,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             : '0.0';
         console.log(`  - Cache hit rate: ${labelHitRate}%`);
 
-        console.log(`✓ FIX #7: Cached customFieldNamesList`);
+        console.log(`\n✓ FIX #7: Cached customFieldNamesList`);
         console.log(`  - List accesses: ${this._perfMetrics.customFieldNamesListAccessCount}`);
         console.log(`  - Cache hits: ${this._perfMetrics.customFieldNamesListCacheHits}`);
         const listHitRate = this._perfMetrics.customFieldNamesListAccessCount > 0
@@ -1596,11 +1694,42 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             : '0.0';
         console.log(`  - Cache hit rate: ${listHitRate}%`);
 
-        console.log(`✓ FIX #8: Optimized sorting algorithm`);
+        console.log(`\n✓ FIX #8: Optimized sorting algorithm`);
         console.log(`  - Sort operations: ${this._perfMetrics.sortOperationCount}`);
         console.log(`  - Value extractions saved: ${this._perfMetrics.sortOptimizationSavings}`);
 
-        console.log(`\nRender metrics:`);
+        console.log(`\n📋 BATCH 2 - Additional Optimizations:`);
+        console.log(`✓ FIX #9: Cached config-only getters`);
+        console.log(`  - Getter accesses: ${this._perfMetrics.configGetterAccessCount}`);
+        console.log(`  - Cache hits: ${this._perfMetrics.configGetterCacheHits}`);
+        const configHitRate = this._perfMetrics.configGetterAccessCount > 0
+            ? ((this._perfMetrics.configGetterCacheHits / this._perfMetrics.configGetterAccessCount) * 100).toFixed(1)
+            : '0.0';
+        console.log(`  - Cache hit rate: ${configHitRate}%`);
+
+        console.log(`\n🔍 FIX #10 BASELINE: ARL field flattening`);
+        console.log(`  - Flatten calls: ${this._perfMetrics.flattenARLCallCount}`);
+        console.log(`  - Fields processed: ${this._perfMetrics.flattenARLFieldsProcessed}`);
+        const avgFieldsPerCall = this._perfMetrics.flattenARLCallCount > 0
+            ? (this._perfMetrics.flattenARLFieldsProcessed / this._perfMetrics.flattenARLCallCount).toFixed(1)
+            : '0';
+        console.log(`  - Avg fields per call: ${avgFieldsPerCall}`);
+        console.log(`  - Opportunity: Cache field mapping logic`);
+
+        console.log(`\n🔍 FIX #11 BASELINE: Infinite scroll triggers`);
+        console.log(`  - Scroll handler triggers: ${this._perfMetrics.infiniteScrollTriggerCount}`);
+        console.log(`  - Opportunity: Debounce to reduce redundant calls`);
+
+        console.log(`\n🔍 FIX #12 BASELINE: Card data generation`);
+        console.log(`  - Card data generated: ${this._perfMetrics.cardDataGenerationCount}`);
+        console.log(`  - Wasted (not in cards mode): ${this._perfMetrics.cardDataWastedCount}`);
+        const wasteRate = this._perfMetrics.cardDataGenerationCount > 0
+            ? ((this._perfMetrics.cardDataWastedCount / this._perfMetrics.cardDataGenerationCount) * 100).toFixed(1)
+            : '0.0';
+        console.log(`  - Waste rate: ${wasteRate}%`);
+        console.log(`  - Opportunity: Only generate when displayMode === 'cards'`);
+
+        console.log(`\n🎯 General Metrics:`);
         console.log(`  - renderedCallback calls: ${this._perfMetrics.renderCallbackCount}`);
         console.log(`  - Last render time: ${this._perfMetrics.lastRenderTime.toFixed(2)}ms`);
         console.log(`================================================\n`);
@@ -1749,12 +1878,13 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
 
     handleLoadMore(event) {
         try {
+            this._perfMetrics.infiniteScrollTriggerCount++;
             this.debugLog('Load more triggered');
-            
+
             if (this.isLoadingMore || !this.hasMoreRecords) {
                 return;
             }
-            
+
             this.isLoadingMore = true;
             
             this.currentOffset += this.initialRecordsToLoad;
