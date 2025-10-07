@@ -130,25 +130,25 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     
     debugLog(message, ...args) {
         if (this.showDebugInfo) {
-            //console.log(`[SlotTest Debug] ${message}`, ...args);
+            console.log(`[SlotTest Debug] ${message}`, ...args);
         }
     }
-    
+
     debugWarn(message, ...args) {
         if (this.showDebugInfo) {
-            //console.warn(`[SlotTest Debug] ${message}`, ...args);
+            console.warn(`[SlotTest Debug] ${message}`, ...args);
         }
     }
-    
+
     debugError(message, ...args) {
         if (this.showDebugInfo) {
-            //console.error(`[SlotTest Debug] ${message}`, ...args);
+            console.error(`[SlotTest Debug] ${message}`, ...args);
         }
     }
-    
+
     // Always log errors regardless of debug mode
     logError(message, ...args) {
-        //console.error(`[SlotTest Error] ${message}`, ...args);
+        console.error(`[SlotTest Error] ${message}`, ...args);
     }
     
     // ===== COMPUTED CONFIGURATION PROPERTIES =====
@@ -1473,6 +1473,8 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
 
     logPerformanceMetrics(label) {
+        if (!this.showDebugInfo) return;
+
         console.log(`\n========== PERFORMANCE METRICS ${label} ==========`);
 
         console.log(`\n📊 BATCH 1 - Optimizations Applied:`);

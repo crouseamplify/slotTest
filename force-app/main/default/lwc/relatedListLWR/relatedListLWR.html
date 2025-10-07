@@ -324,52 +324,5 @@
             <div class="slds-backdrop slds-backdrop_open" onclick={handleModalBackdropClick}></div>
         </template>
 
-    <!-- Performance Debug Info (only visible when enabled in CPE) -->
-    <template if:true={showDebugInfo}>
-        <div class="content-area">
-            <div class="slds-m-top_large">
-                <lightning-accordion allow-multiple-sections-open>
-                    <lightning-accordion-section name="performanceInfo" label="Performance & Debug Information">
-                        <div class="slds-text-longform">
-                            <h4 class="slds-text-heading_small">Configuration:</h4>
-                            <div class="slds-m-bottom_medium">
-                                <p><strong>Data Source Mode:</strong> {dataSourceMode}</p>
-                                <p><strong>Record ID:</strong> {recordId}</p>
-                                <p><strong>Detected Object Type:</strong> {detectedObjectType}</p>
-                                <p><strong>Last Load Time:</strong> {lastLoadTime}ms</p>
-                                <p><strong>Has Valid Config:</strong> {hasValidConfiguration}</p>
-                            </div>
-
-                            <!-- ARL Mode Debug Info -->
-                            <h4 class="slds-text-heading_small">Related List API Mode Configuration:</h4>
-                            <div class="slds-m-bottom_medium">
-                                <p><strong>Related List Name:</strong> {relatedListName}</p>
-                                <p><strong>Relationship Field:</strong> {relationshipField}</p>
-                                <p><strong>Enabled Fields:</strong> {enabledFields}</p>
-                            </div>
-                            
-                            <h4 class="slds-text-heading_small">Current State:</h4>
-                            <div class="slds-m-bottom_medium">
-                                <p><strong>Total Records:</strong> {allRecords.length}</p>
-                                <p><strong>Displayed Records:</strong> {displayedRecords.length}</p>
-                                <p><strong>Columns:</strong> {columns.length}</p>
-                                <p><strong>Has More Records:</strong> {hasMoreRecords}</p>
-                                <p><strong>Is Loading:</strong> {isLoading}</p>
-                            </div>
-                            
-                            <h4 class="slds-text-heading_small">UI Configuration:</h4>
-                            <div class="slds-m-bottom_medium">
-                                <p><strong>Number of Slots:</strong> {numberOfSlots}</p>
-                                <p><strong>Show View More:</strong> {showViewMore}</p>
-                                <p><strong>Show View All:</strong> {showViewAll}</p>
-                                <p><strong>Enable Record Linking:</strong> {enableRecordLinking}</p>
-                                <p><strong>Record Page URL:</strong> {recordPageUrl}</p>
-                            </div>
-                        </div>
-                    </lightning-accordion-section>
-                </lightning-accordion>
-            </div>
-        </div>
-    </template>
 </div>
 </template>
