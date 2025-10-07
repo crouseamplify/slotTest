@@ -85,9 +85,16 @@
     margin: 0 !important;
 }
 
-/* Remove gray background from datatable header */
+/* Style datatable header - transparent background with border separation */
 .responsive-datatable lightning-datatable table thead {
     background: transparent !important;
+    border-top: 2px solid #d8dde6 !important;
+    border-bottom: 2px solid #d8dde6 !important;
+}
+
+.responsive-datatable lightning-datatable table thead th {
+    border-top: 2px solid #d8dde6 !important;
+    border-bottom: 2px solid #d8dde6 !important;
 }
 
 /* Style file name buttons to look like links */
