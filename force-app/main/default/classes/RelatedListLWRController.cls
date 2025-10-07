@@ -170,7 +170,12 @@ public with sharing class RelatedListLWRController {
             }
             
             // Build the SOQL query using the relationship field
-            String soqlQuery = 'SELECT ' + String.join(new List<String>(fieldNames), ', ') + 
+            // SECURITY NOTE: This string concatenation is SAFE because:
+            // 1. fieldNames come from Schema.DescribeSObjectResult (validated by Salesforce)
+            // 2. childObjectType comes from Schema.ChildRelationship (Salesforce metadata)
+            // 3. relationshipField comes from Schema.ChildRelationship (Salesforce metadata)
+            // 4. recordId uses bind variable (:recordId) for injection protection
+            String soqlQuery = 'SELECT ' + String.join(new List<String>(fieldNames), ', ') +
                               ' FROM ' + relationshipInfo.childObjectType +
                               ' WHERE ' + relationshipInfo.relationshipField + ' = :recordId';
             
@@ -182,16 +187,30 @@ public with sharing class RelatedListLWRController {
             }
             
             // Add LIMIT to prevent too many records
-            soqlQuery += ' LIMIT 50';
+            soqlQuery += ' LIMIT 25';
             
             System.debug('RelatedListLWR: Executing SOQL with relationship fields: ' + soqlQuery);
             records = Database.query(soqlQuery);
             System.debug('RelatedListLWR: Query returned ' + records.size() + ' records');
-            
+
+            // Enforce field-level security - remove fields user doesn't have access to
+            if (!records.isEmpty()) {
+                SObjectAccessDecision decision = Security.stripInaccessible(
+                    AccessType.READABLE,
+                    records
+                );
+                records = decision.getRecords();
+
+                // Log if any fields were removed
+                if (!decision.getRemovedFields().isEmpty()) {
+                    System.debug('RelatedListLWR: Removed inaccessible fields: ' + decision.getRemovedFields());
+                }
+            }
+
         } catch (Exception e) {
             System.debug('RelatedListLWR: Error querying related records: ' + e.getMessage() + '\n' + e.getStackTraceString());
         }
-        
+
         return records;
     }
     
@@ -539,14 +558,29 @@ public with sharing class RelatedListLWRController {
     @AuraEnabled(cacheable=false)
     public static String getImageAsBase64(String contentDocumentId) {
         try {
-            List<ContentVersion> versions = [
-                SELECT VersionData, FileExtension 
-                FROM ContentVersion 
-                WHERE ContentDocumentId = :contentDocumentId 
-                AND IsLatest = true 
+            // Verify user has access to this file via ContentDocumentLink
+            // This ensures users can only access files they have permission to view
+            // With sharing enforces object-level security on the linked entity
+            List<ContentDocumentLink> accessCheck = [
+                SELECT Id, LinkedEntityId
+                FROM ContentDocumentLink
+                WHERE ContentDocumentId = :contentDocumentId
                 LIMIT 1
             ];
-            
+
+            // If no links exist or user doesn't have access to any linked records, deny access
+            if (accessCheck.isEmpty()) {
+                throw new AuraHandledException('Access denied: You do not have permission to access this file');
+            }
+
+            List<ContentVersion> versions = [
+                SELECT VersionData, FileExtension
+                FROM ContentVersion
+                WHERE ContentDocumentId = :contentDocumentId
+                AND IsLatest = true
+                LIMIT 1
+            ];
+
             if (!versions.isEmpty()) {
                 Blob imageBlob = versions[0].VersionData;
                 String base64 = EncodingUtil.base64Encode(imageBlob);
@@ -565,13 +599,22 @@ public with sharing class RelatedListLWRController {
     }
 
     private static String buildFileQuery(String sortField, String sortDirection, Integer limitCount, String recordId) {
+        // Validate recordId format to prevent SOQL injection
+        try {
+            Id validatedId = Id.valueOf(recordId);
+        } catch (Exception e) {
+            throw new AuraHandledException('Invalid record ID format: ' + recordId);
+        }
+
         String selectClause = 'SELECT Id, ContentDocumentId, LinkedEntityId, ' +
                             'ContentDocument.Id, ContentDocument.Title, ContentDocument.LatestPublishedVersionId, ' +
                             'ContentDocument.ContentSize, ContentDocument.FileType, ContentDocument.FileExtension, ' +
                             'ContentDocument.CreatedDate, ContentDocument.CreatedById, ' +
                             'ContentDocument.CreatedBy.Name, ContentDocument.CreatedBy.FirstName, ContentDocument.CreatedBy.LastName';
-        
+
         String fromClause = ' FROM ContentDocumentLink';
+        // SECURITY NOTE: Using String.escapeSingleQuotes as defense-in-depth
+        // recordId is validated as valid Salesforce ID above
         String whereClause = ' WHERE LinkedEntityId = \'' + String.escapeSingleQuotes(recordId) + '\' AND IsDeleted = false';
         
         String actualSortField;
