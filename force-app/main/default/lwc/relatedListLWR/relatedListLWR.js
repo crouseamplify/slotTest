@@ -24,27 +24,31 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     @api recordId;
     
     // ===== PRIVATE TRACKED PROPERTIES =====
-    
+
+    // Keep @track only for arrays that are mutated internally
     @track allRecords = [];
     @track displayedRecords = [];
     @track columns = [];
-    @track isLoading = false;
-    @track isLoadingMore = false;
-    @track error = null;
-    @track hasData = false;
-    @track hasMoreRecords = false;
-    @track currentOffset = 0;
-    @track detectedObjectType = null;
-    @track sortedBy = '';
-    @track sortDirection = 'asc';
-    // File-specific state
-    @track showImageModal = false;
-    @track modalImageUrl = '';
-    @track modalDownloadUrl = '';
-    @track modalImageName = '';
-    @track modalImageSize = '';
-    @track modalImageLoadError = '';
-    @track isLoadingModalImage = false;
+
+    // Fix #2: Remove @track from primitives - they're still reactive without it
+    isLoading = false;
+    isLoadingMore = false;
+    error = null;
+    hasData = false;
+    hasMoreRecords = false;
+    currentOffset = 0;
+    detectedObjectType = null;
+    sortedBy = '';
+    sortDirection = 'asc';
+
+    // File-specific state (primitives - no @track needed)
+    showImageModal = false;
+    modalImageUrl = '';
+    modalDownloadUrl = '';
+    modalImageName = '';
+    modalImageSize = '';
+    modalImageLoadError = '';
+    isLoadingModalImage = false;
     
     // Performance and state tracking
     lastDataSignature = '';
@@ -1455,12 +1459,13 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     logPerformanceMetrics(label) {
         console.log(`\n========== PERFORMANCE METRICS ${label} ==========`);
         console.log(`✓ FIX #1 APPLIED: Cached configObj (JSON.parse only on change)`);
+        console.log(`✓ FIX #2 APPLIED: Removed @track from 14 primitives`);
         console.log(`configObj accesses: ${this._perfMetrics.configObjAccessCount}`);
         console.log(`dataSignature accesses: ${this._perfMetrics.dataSignatureAccessCount}`);
         console.log(`uiSignature accesses: ${this._perfMetrics.uiSignatureAccessCount}`);
         console.log(`renderedCallback calls: ${this._perfMetrics.renderCallbackCount}`);
         console.log(`Last render time: ${this._perfMetrics.lastRenderTime.toFixed(2)}ms`);
-        console.log(`@track properties: 17 (allRecords, displayedRecords, columns, isLoading, isLoadingMore, error, hasData, hasMoreRecords, currentOffset, detectedObjectType, sortedBy, sortDirection, showImageModal, modalImageUrl, modalDownloadUrl, modalImageName, modalImageSize, modalImageLoadError, isLoadingModalImage)`);
+        console.log(`@track properties: 3 (was 17) - Only arrays: allRecords, displayedRecords, columns`);
         console.log(`================================================\n`);
     }
     
