@@ -51,6 +51,19 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     lastUISignature = '';
     isInitialized = false;
     lastLoadTime = 0;
+
+    // Performance metrics tracking
+    _perfMetrics = {
+        configObjAccessCount: 0,
+        dataSignatureAccessCount: 0,
+        uiSignatureAccessCount: 0,
+        renderCallbackCount: 0,
+        lastRenderTime: 0
+    };
+
+    // Cached config object (Fix #1: Cache JSON.parse result)
+    _cachedConfigObj = null;
+    _lastConfigString = '';
     
     // ===== UTILITY METHODS FOR DEBUGGING =====
     
@@ -80,12 +93,20 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     // ===== COMPUTED CONFIGURATION PROPERTIES =====
     
     get configObj() {
-        try {
-            return JSON.parse(this.configJSONString);
-        } catch (e) {
-            this.logError('Invalid JSON in configJSONString:', e);
-            return {};
+        this._perfMetrics.configObjAccessCount++;
+
+        // Fix #1: Only parse JSON when the string actually changes
+        if (this.configJSONString !== this._lastConfigString) {
+            try {
+                this._cachedConfigObj = JSON.parse(this.configJSONString);
+                this._lastConfigString = this.configJSONString;
+            } catch (e) {
+                this.logError('Invalid JSON in configJSONString:', e);
+                this._cachedConfigObj = {};
+            }
         }
+
+        return this._cachedConfigObj;
     }
     
     // Get the current record
@@ -266,6 +287,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     // ===== SMART CHANGE DETECTION =====
     
     get dataSignature() {
+        this._perfMetrics.dataSignatureAccessCount++;
         // Create signature for data-affecting properties based on mode
         if (this.isArticlesType) {
             return JSON.stringify({
@@ -299,6 +321,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
     
     get uiSignature() {
+        this._perfMetrics.uiSignatureAccessCount++;
         return JSON.stringify({
             numberOfSlots: this.numberOfSlots,
             iconType: this.iconType,
@@ -589,6 +612,9 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
     
     renderedCallback() {
+        const renderStart = performance.now();
+        this._perfMetrics.renderCallbackCount++;
+
         if (!this.isInitialized) {
             return;
         }
@@ -608,6 +634,9 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             this.debugLog('UI signature changed, rebuilding columns only');
             this.rebuildColumnsOnly();
         }
+
+        const renderEnd = performance.now();
+        this._perfMetrics.lastRenderTime = renderEnd - renderStart;
     }
     
     // ===== DATA LOADING ORCHESTRATION =====
@@ -1397,6 +1426,9 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     handleRefresh() {
         this.debugLog(`Refresh clicked - Mode: ${this.dataSourceMode}`);
 
+        // Log performance metrics before refresh
+        this.logPerformanceMetrics('BEFORE REFRESH');
+
         // Set a flag to prevent renderedCallback from interfering
         this.isRefreshing = true;
 
@@ -1406,9 +1438,30 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         this.lastDataSignature = '';
         this.lastUISignature = '';
 
+        // Reset metrics for this refresh cycle
+        this._perfMetrics.configObjAccessCount = 0;
+        this._perfMetrics.dataSignatureAccessCount = 0;
+        this._perfMetrics.uiSignatureAccessCount = 0;
+
         this.loadData().finally(() => {
             this.isRefreshing = false;
+            // Log performance metrics after refresh completes
+            setTimeout(() => {
+                this.logPerformanceMetrics('AFTER REFRESH');
+            }, 100);
         });
+    }
+
+    logPerformanceMetrics(label) {
+        console.log(`\n========== PERFORMANCE METRICS ${label} ==========`);
+        console.log(`✓ FIX #1 APPLIED: Cached configObj (JSON.parse only on change)`);
+        console.log(`configObj accesses: ${this._perfMetrics.configObjAccessCount}`);
+        console.log(`dataSignature accesses: ${this._perfMetrics.dataSignatureAccessCount}`);
+        console.log(`uiSignature accesses: ${this._perfMetrics.uiSignatureAccessCount}`);
+        console.log(`renderedCallback calls: ${this._perfMetrics.renderCallbackCount}`);
+        console.log(`Last render time: ${this._perfMetrics.lastRenderTime.toFixed(2)}ms`);
+        console.log(`@track properties: 17 (allRecords, displayedRecords, columns, isLoading, isLoadingMore, error, hasData, hasMoreRecords, currentOffset, detectedObjectType, sortedBy, sortDirection, showImageModal, modalImageUrl, modalDownloadUrl, modalImageName, modalImageSize, modalImageLoadError, isLoadingModalImage)`);
+        console.log(`================================================\n`);
     }
     
     handleViewMore() {
