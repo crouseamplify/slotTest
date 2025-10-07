@@ -53,6 +53,8 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     lastUISignature = '';
     isInitialized = false;
     lastLoadTime = 0;
+    _scrollDebounceTimeout = null;
+    _cachedRelationshipFieldMap = null;
 
     // Performance metrics tracking
     _perfMetrics = {
@@ -1010,10 +1012,12 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             
             // Flatten relationship fields for ARL mode
             this.flattenRelationshipFieldsForARL(processedRecord, records.length > 0 ? records[0] : {});
-            
-            // Add card display data
-            processedRecord.cardData = this.buildCardData(processedRecord);
-            
+
+            // Add card display data - only when in cards mode
+            if (this.displayMode === 'cards') {
+                processedRecord.cardData = this.buildCardData(processedRecord);
+            }
+
             return processedRecord;
         });
     }
@@ -1033,30 +1037,38 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     flattenRelationshipFieldsForARL(record, sampleRecord) {
         this._perfMetrics.flattenARLCallCount++;
 
-        // Handle relationship fields by flattening the nested objects
-        // This processes fields like "Account.Name" into "Account_Name"
-        const keysToProcess = Object.keys(sampleRecord || {});
-        this._perfMetrics.flattenARLFieldsProcessed += keysToProcess.length;
+        // Cache the relationship field mapping to avoid repeated processing
+        if (!this._cachedRelationshipFieldMap && sampleRecord) {
+            this._cachedRelationshipFieldMap = [];
+            const keysToProcess = Object.keys(sampleRecord);
+            this._perfMetrics.flattenARLFieldsProcessed += keysToProcess.length;
 
-        keysToProcess.forEach(key => {
-            if (key.includes('.')) {
-                const parts = key.split('.');
-                const relationshipName = parts[0];
-                const fieldName = parts[1];
-                
-                // Create a flattened field name for the datatable
-                const flattenedFieldName = this.getFlattenedFieldName(key);
-                
-                // Extract the value from the nested relationship
-                if (record[relationshipName] && record[relationshipName][fieldName] !== undefined) {
-                    record[flattenedFieldName] = record[relationshipName][fieldName];
-                    this.debugLog(`Flattened ARL field ${key} -> ${flattenedFieldName}: ${record[flattenedFieldName]}`);
-                } else {
-                    record[flattenedFieldName] = null;
-                    this.debugLog(`Flattened ARL field ${key} -> ${flattenedFieldName}: null (no data)`);
+            keysToProcess.forEach(key => {
+                if (key.includes('.')) {
+                    const parts = key.split('.');
+                    this._cachedRelationshipFieldMap.push({
+                        originalKey: key,
+                        relationshipName: parts[0],
+                        fieldName: parts[1],
+                        flattenedFieldName: this.getFlattenedFieldName(key)
+                    });
                 }
-            }
-        });
+            });
+        }
+
+        // Use cached mapping to process record
+        if (this._cachedRelationshipFieldMap) {
+            this._cachedRelationshipFieldMap.forEach(mapping => {
+                // Extract the value from the nested relationship
+                if (record[mapping.relationshipName] && record[mapping.relationshipName][mapping.fieldName] !== undefined) {
+                    record[mapping.flattenedFieldName] = record[mapping.relationshipName][mapping.fieldName];
+                    this.debugLog(`Flattened ARL field ${mapping.originalKey} -> ${mapping.flattenedFieldName}: ${record[mapping.flattenedFieldName]}`);
+                } else {
+                    record[mapping.flattenedFieldName] = null;
+                    this.debugLog(`Flattened ARL field ${mapping.originalKey} -> ${mapping.flattenedFieldName}: null (no data)`);
+                }
+            });
+        }
     }
 
     // ===== SOQL MODE DATA LOADING =====
@@ -1080,10 +1092,12 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             if (this.enableRecordLinking && this.recordPageUrl && record.Id) {
                 flatRecord.recordUrl = this.buildRecordUrl(record.Id);
             }
-            
-            // Add card display data
-            flatRecord.cardData = this.buildCardData(flatRecord);
-            
+
+            // Add card display data - only when in cards mode
+            if (this.displayMode === 'cards') {
+                flatRecord.cardData = this.buildCardData(flatRecord);
+            }
+
             return flatRecord;
         });
     }
@@ -1322,6 +1336,8 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         this.hasMoreRecords = false;
         this.currentOffset = 0;
         this.clearSort();
+        // Clear cached field mapping for performance optimization
+        this._cachedRelationshipFieldMap = null;
     }
     
     buildRecordUrl(recordId) {
@@ -1667,15 +1683,26 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
                 return;
             }
 
-            this.isLoadingMore = true;
-            
-            this.currentOffset += this.initialRecordsToLoad;
-            this.updateDisplayedRecords();
-            
-            setTimeout(() => {
-                this.isLoadingMore = false;
-            }, 300);
-            
+            // Debounce scroll handler to prevent redundant calls during fast scrolling
+            if (this._scrollDebounceTimeout) {
+                clearTimeout(this._scrollDebounceTimeout);
+            }
+
+            this._scrollDebounceTimeout = setTimeout(() => {
+                if (this.isLoadingMore || !this.hasMoreRecords) {
+                    return;
+                }
+
+                this.isLoadingMore = true;
+
+                this.currentOffset += this.initialRecordsToLoad;
+                this.updateDisplayedRecords();
+
+                setTimeout(() => {
+                    this.isLoadingMore = false;
+                }, 300);
+            }, 250); // 250ms debounce delay
+
         } catch (error) {
             this.logError('Error in load more:', error);
             this.isLoadingMore = false;
