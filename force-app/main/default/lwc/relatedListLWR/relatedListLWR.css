@@ -191,11 +191,30 @@
     border: none;
     padding: .875rem 0;
     box-shadow: none;
+    min-width: 280px;
 }
 
 .record-card:hover {
     box-shadow: none;
     background: transparent;
+}
+
+.card-title,
+.card-title-link {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.card-title-link {
+    color: #0176d3;
+    text-decoration: none;
+}
+
+.card-title-link:hover {
+    text-decoration: underline;
 }
 
 .card-field {
@@ -210,7 +229,7 @@
 .card-label {
     font-weight: 500;
     flex-shrink: 0;
-    width: 215px;
+    width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -218,7 +237,9 @@
 
 .card-value {
     flex-grow: 1;
-    word-break: break-word;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
 }
 
 

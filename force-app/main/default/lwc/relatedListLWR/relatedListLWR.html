@@ -147,8 +147,8 @@
                             <!-- Remaining Fields -->
                             <template for:each={record.cardData.fields} for:item="field">
                                 <div key={field.key} class="card-field">
-                                    <span class="card-label">{field.label}:</span>
-                                    <span class="card-value">{field.value}</span>
+                                    <span class="card-label" title={field.label}>{field.label}:</span>
+                                    <span class="card-value" title={field.value}>{field.value}</span>
                                 </div>
                             </template>
                         </div>
