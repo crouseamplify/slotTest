@@ -560,4 +560,318 @@ private class RelatedListLWRControllerTest {
         System.assert(contactResult.fields.size() > 0, 'Should use default Contact fields');
         System.assert(oppResult.fields.size() > 0, 'Should use default Opportunity fields');
     }
+
+    // ===== WRAPPER CLASS TESTS =====
+
+    @isTest
+    static void testFieldInfoWrapper() {
+        Test.startTest();
+        RelatedListLWRController.FieldInfo field = new RelatedListLWRController.FieldInfo();
+        field.apiName = 'TestField';
+        field.label = 'Test Label';
+        field.type = 'STRING';
+
+        System.assertEquals('TestField', field.apiName);
+        System.assertEquals('Test Label', field.label);
+        System.assertEquals('STRING', field.type);
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testRelatedListInfoWrapper() {
+        Test.startTest();
+        RelatedListLWRController.RelatedListInfo info = new RelatedListLWRController.RelatedListInfo();
+        info.fields = new List<RelatedListLWRController.FieldInfo>();
+        info.records = new List<sObject>();
+        info.relationshipName = 'Contacts';
+        info.relatedObjectType = 'Contact';
+
+        System.assertEquals('Contacts', info.relationshipName);
+        System.assertEquals('Contact', info.relatedObjectType);
+        System.assertNotEquals(null, info.fields);
+        System.assertNotEquals(null, info.records);
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testArticleDataDefaultConstructor() {
+        Test.startTest();
+        RelatedListLWRController.ArticleData article = new RelatedListLWRController.ArticleData();
+
+        System.assertEquals(null, article.id);
+        System.assertEquals(null, article.title);
+        System.assertEquals(null, article.urlName);
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testArticleDataParameterizedConstructor() {
+        Test.startTest();
+        RelatedListLWRController.ArticleData article = new RelatedListLWRController.ArticleData(
+            'test-id-123', 'Test Article Title', 'test-article-url'
+        );
+
+        System.assertEquals('test-id-123', article.id);
+        System.assertEquals('Test Article Title', article.title);
+        System.assertEquals('test-article-url', article.urlName);
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testArticleDataSetters() {
+        Test.startTest();
+        RelatedListLWRController.ArticleData article = new RelatedListLWRController.ArticleData();
+
+        article.id = 'new-id';
+        article.title = 'New Title';
+        article.urlName = 'new-url-name';
+
+        System.assertEquals('new-id', article.id);
+        System.assertEquals('New Title', article.title);
+        System.assertEquals('new-url-name', article.urlName);
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testFileRecordWrapper() {
+        Test.startTest();
+        RelatedListLWRController.FileRecord file = new RelatedListLWRController.FileRecord();
+        file.id = 'file-123';
+        file.title = 'Test File';
+        file.fileExtension = 'pdf';
+        file.contentSize = 1024;
+        file.formattedSize = '1 KB';
+        file.isImage = false;
+        file.canPreview = true;
+        file.icon = 'doctype:pdf';
+
+        System.assertEquals('file-123', file.id);
+        System.assertEquals('Test File', file.title);
+        System.assertEquals('pdf', file.fileExtension);
+        System.assertEquals(1024, file.contentSize);
+        System.assertEquals(false, file.isImage);
+        System.assertEquals(true, file.canPreview);
+        Test.stopTest();
+    }
+
+    // ===== MORE COMPREHENSIVE FILE TESTS =====
+
+    @isTest
+    static void testGetFiles_AllSortFieldVariations() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+
+        Test.startTest();
+        List<RelatedListLWRController.FileRecord> byTitle =
+            RelatedListLWRController.getFiles(acc.Id, 'Title', 'ASC', 10);
+        List<RelatedListLWRController.FileRecord> bySize =
+            RelatedListLWRController.getFiles(acc.Id, 'ContentSize', 'DESC', 10);
+        List<RelatedListLWRController.FileRecord> byExt =
+            RelatedListLWRController.getFiles(acc.Id, 'FileExtension', 'ASC', 10);
+        List<RelatedListLWRController.FileRecord> byModified =
+            RelatedListLWRController.getFiles(acc.Id, 'ContentModifiedDate', 'DESC', 10);
+        Test.stopTest();
+
+        System.assertNotEquals(null, byTitle, 'Should handle Title sort');
+        System.assertNotEquals(null, bySize, 'Should handle ContentSize sort');
+        System.assertNotEquals(null, byExt, 'Should handle FileExtension sort');
+        System.assertNotEquals(null, byModified, 'Should handle ContentModifiedDate sort');
+    }
+
+    @isTest
+    static void testGetFiles_EmptyParameters() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+
+        Test.startTest();
+        List<RelatedListLWRController.FileRecord> filesEmpty =
+            RelatedListLWRController.getFiles(acc.Id, '', '', 0);
+        List<RelatedListLWRController.FileRecord> filesInvalid =
+            RelatedListLWRController.getFiles(acc.Id, 'InvalidField', 'INVALID', 10);
+        Test.stopTest();
+
+        System.assertNotEquals(null, filesEmpty, 'Should handle empty parameters');
+        System.assertNotEquals(null, filesInvalid, 'Should handle invalid parameters');
+    }
+
+    @isTest
+    static void testGetFiles_AllFileIcons() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+
+        // Create comprehensive set of file types using FirstPublishLocationId
+        List<ContentVersion> cvList = new List<ContentVersion>{
+            new ContentVersion(Title = 'test.xlsx', PathOnClient = 'test.xlsx', VersionData = Blob.valueOf('xlsx'), FirstPublishLocationId = acc.Id),
+            new ContentVersion(Title = 'test.xls', PathOnClient = 'test.xls', VersionData = Blob.valueOf('xls'), FirstPublishLocationId = acc.Id),
+            new ContentVersion(Title = 'test.pptx', PathOnClient = 'test.pptx', VersionData = Blob.valueOf('pptx'), FirstPublishLocationId = acc.Id),
+            new ContentVersion(Title = 'test.ppt', PathOnClient = 'test.ppt', VersionData = Blob.valueOf('ppt'), FirstPublishLocationId = acc.Id),
+            new ContentVersion(Title = 'test.csv', PathOnClient = 'test.csv', VersionData = Blob.valueOf('csv'), FirstPublishLocationId = acc.Id),
+            new ContentVersion(Title = 'test.xml', PathOnClient = 'test.xml', VersionData = Blob.valueOf('xml'), FirstPublishLocationId = acc.Id),
+            new ContentVersion(Title = 'test.zip', PathOnClient = 'test.zip', VersionData = Blob.valueOf('zip'), FirstPublishLocationId = acc.Id),
+            new ContentVersion(Title = 'test.mp3', PathOnClient = 'test.mp3', VersionData = Blob.valueOf('mp3'), FirstPublishLocationId = acc.Id),
+            new ContentVersion(Title = 'test.mp4', PathOnClient = 'test.mp4', VersionData = Blob.valueOf('mp4'), FirstPublishLocationId = acc.Id),
+            new ContentVersion(Title = 'test.bmp', PathOnClient = 'test.bmp', VersionData = Blob.valueOf('bmp'), FirstPublishLocationId = acc.Id),
+            new ContentVersion(Title = 'test.svg', PathOnClient = 'test.svg', VersionData = Blob.valueOf('svg'), FirstPublishLocationId = acc.Id),
+            new ContentVersion(Title = 'test.webp', PathOnClient = 'test.webp', VersionData = Blob.valueOf('webp'), FirstPublishLocationId = acc.Id)
+        };
+        insert cvList;
+
+        Test.startTest();
+        List<RelatedListLWRController.FileRecord> files =
+            RelatedListLWRController.getFiles(acc.Id, 'Title', 'ASC', 50);
+        Test.stopTest();
+
+        Set<String> iconTypes = new Set<String>();
+        for (RelatedListLWRController.FileRecord file : files) {
+            iconTypes.add(file.icon);
+        }
+        System.assert(iconTypes.size() >= 5, 'Should have multiple different file icons');
+    }
+
+    @isTest
+    static void testGetImageAsBase64_DifferentImageTypes() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+
+        ContentVersion jpgVersion = new ContentVersion(
+            Title = 'test.jpg',
+            PathOnClient = 'test.jpg',
+            VersionData = Blob.valueOf('Test JPG'),
+            FirstPublishLocationId = acc.Id
+        );
+        insert jpgVersion;
+
+        ContentVersion gifVersion = new ContentVersion(
+            Title = 'test.gif',
+            PathOnClient = 'test.gif',
+            VersionData = Blob.valueOf('Test GIF'),
+            FirstPublishLocationId = acc.Id
+        );
+        insert gifVersion;
+
+        jpgVersion = [SELECT ContentDocumentId FROM ContentVersion WHERE Id = :jpgVersion.Id];
+        gifVersion = [SELECT ContentDocumentId FROM ContentVersion WHERE Id = :gifVersion.Id];
+
+        Test.startTest();
+        String jpgResult = RelatedListLWRController.getImageAsBase64(jpgVersion.ContentDocumentId);
+        String gifResult = RelatedListLWRController.getImageAsBase64(gifVersion.ContentDocumentId);
+        Test.stopTest();
+
+        System.assert(jpgResult != null && jpgResult.contains('data:image/'), 'JPG should return data URL');
+        System.assert(gifResult != null && gifResult.contains('data:image/'), 'GIF should return data URL');
+    }
+
+    @isTest
+    static void testGetFiles_QueryException() {
+        String fakeId = '001000000000000AAA';
+
+        Test.startTest();
+        List<RelatedListLWRController.FileRecord> result =
+            RelatedListLWRController.getFiles(fakeId, 'CreatedDate', 'DESC', 10);
+        Test.stopTest();
+
+        System.assertNotEquals(null, result, 'Should return list even for non-existent record');
+        System.assertEquals(0, result.size(), 'Should return empty list for non-existent record');
+    }
+
+    @isTest
+    static void testGetFiles_EmptyResults() {
+        Account emptyAcc = new Account(Name = 'Empty Account');
+        insert emptyAcc;
+
+        Test.startTest();
+        List<RelatedListLWRController.FileRecord> result =
+            RelatedListLWRController.getFiles(emptyAcc.Id, 'CreatedDate', 'DESC', 10);
+        Test.stopTest();
+
+        System.assertNotEquals(null, result, 'Should return list when no files');
+        System.assertEquals(0, result.size(), 'Should return empty list when no files attached');
+    }
+
+    @isTest
+    static void testGetFiles_MinimalContentVersion() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+
+        ContentVersion minimalVersion = new ContentVersion(
+            Title = null,
+            PathOnClient = 'minimal.txt',
+            VersionData = Blob.valueOf('minimal'),
+            FirstPublishLocationId = acc.Id
+        );
+        insert minimalVersion;
+
+        Test.startTest();
+        List<RelatedListLWRController.FileRecord> files =
+            RelatedListLWRController.getFiles(acc.Id, 'CreatedDate', 'DESC', 50);
+        Test.stopTest();
+
+        System.assertNotEquals(0, files.size(), 'Should handle files with null titles');
+    }
+
+    @isTest
+    static void testGetFiles_DownloadUrls() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+
+        Test.startTest();
+        List<RelatedListLWRController.FileRecord> files =
+            RelatedListLWRController.getFiles(acc.Id, 'CreatedDate', 'DESC', 10);
+        Test.stopTest();
+
+        for (RelatedListLWRController.FileRecord file : files) {
+            System.assertNotEquals(null, file.downloadUrl, 'Download URL should not be null');
+            System.assert(file.downloadUrl.contains('/sfc/servlet.shepherd/document/download/'),
+                         'Download URL should contain correct path');
+        }
+    }
+
+    @isTest
+    static void testGetFiles_UserDisplayNames() {
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+
+        Test.startTest();
+        List<RelatedListLWRController.FileRecord> files =
+            RelatedListLWRController.getFiles(acc.Id, 'CreatedDate', 'DESC', 10);
+        Test.stopTest();
+
+        for (RelatedListLWRController.FileRecord file : files) {
+            System.assertNotEquals(null, file.createdBy, 'Created by should not be null');
+            System.assertNotEquals('', file.createdBy, 'Created by should not be empty');
+        }
+    }
+
+    @isTest
+    static void testGetRelatedListInfo_EmptyRecordId() {
+        Test.startTest();
+        RelatedListLWRController.RelatedListInfo result =
+            RelatedListLWRController.getRelatedListInfo('Account', 'Contacts', '', 'Name,Email', '');
+        Test.stopTest();
+
+        System.assertNotEquals(null, result, 'Result should not be null');
+        System.assertEquals(0, result.records.size(), 'Should return no records without recordId');
+    }
+
+    @isTest
+    static void testGetRelatedListInfo_NullRecordId() {
+        Test.startTest();
+        RelatedListLWRController.RelatedListInfo result =
+            RelatedListLWRController.getRelatedListInfo('Account', 'Contacts', null, 'Name', '');
+        Test.stopTest();
+
+        System.assertNotEquals(null, result, 'Should handle null recordId');
+    }
+
+    @isTest
+    static void testGetObjectTypeFromRecordId_NullValue() {
+        Test.startTest();
+        String objectType = RelatedListLWRController.getObjectTypeFromRecordId(null);
+        Test.stopTest();
+
+        System.assertEquals(null, objectType, 'Should return null for null input');
+    }
+
+    @isTest
+    static void testGetCaseArticles_WithNullId() {
+        Test.startTest();
+        List<RelatedListLWRController.ArticleData> articles =
+            RelatedListLWRController.getCaseArticles(null);
+        Test.stopTest();
+
+        System.assertEquals(0, articles.size(), 'Should return empty list for null case ID');
+    }
 }
