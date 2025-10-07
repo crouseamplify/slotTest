@@ -334,31 +334,19 @@
                             <h4 class="slds-text-heading_small">Configuration:</h4>
                             <div class="slds-m-bottom_medium">
                                 <p><strong>Data Source Mode:</strong> {dataSourceMode}</p>
-                                <p><strong>Use Custom Query:</strong> {useCustomQuery}</p>
                                 <p><strong>Record ID:</strong> {recordId}</p>
                                 <p><strong>Detected Object Type:</strong> {detectedObjectType}</p>
                                 <p><strong>Last Load Time:</strong> {lastLoadTime}ms</p>
                                 <p><strong>Has Valid Config:</strong> {hasValidConfiguration}</p>
                             </div>
-                            
-                            <!-- SOQL Mode Debug Info -->
-                            <template if:true={useCustomQuery}>
-                                <h4 class="slds-text-heading_small">Custom SOQL Mode Configuration:</h4>
-                                <div class="slds-m-bottom_medium">
-                                    <p><strong>SOQL Query:</strong> {soqlQuery}</p>
-                                    <p><strong>Display Fields:</strong> {displayFields}</p>
-                                </div>
-                            </template>
-                            
+
                             <!-- ARL Mode Debug Info -->
-                            <template if:false={useCustomQuery}>
-                                <h4 class="slds-text-heading_small">Related List API Mode Configuration:</h4>
-                                <div class="slds-m-bottom_medium">
-                                    <p><strong>Related List Name:</strong> {relatedListName}</p>
-                                    <p><strong>Relationship Field:</strong> {relationshipField}</p>
-                                    <p><strong>Enabled Fields:</strong> {enabledFields}</p>
-                                </div>
-                            </template>
+                            <h4 class="slds-text-heading_small">Related List API Mode Configuration:</h4>
+                            <div class="slds-m-bottom_medium">
+                                <p><strong>Related List Name:</strong> {relatedListName}</p>
+                                <p><strong>Relationship Field:</strong> {relationshipField}</p>
+                                <p><strong>Enabled Fields:</strong> {enabledFields}</p>
+                            </div>
                             
                             <h4 class="slds-text-heading_small">Current State:</h4>
                             <div class="slds-m-bottom_medium">

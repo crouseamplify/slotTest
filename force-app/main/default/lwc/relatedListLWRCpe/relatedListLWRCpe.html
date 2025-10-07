@@ -126,102 +126,63 @@
             </div>
         </lightning-tab>
 
-        <!-- ===== TABLE SETTINGS TAB (for Standard and Articles) ===== -->
+        <!-- ===== SETTINGS TAB (for Standard and Articles) ===== -->
 <template if:true={showTableSettings}>
-    <lightning-tab label="List Settings">
-        
-        <!-- Data Source Selection - ONLY for Standard -->
+    <lightning-tab label="Settings">
+
+        <!-- List Settings - ONLY for Standard -->
         <template if:true={isStandardType}>
             <div class="slds-m-bottom_large">
-                <h3 class="slds-text-heading_small slds-m-bottom_small">Data Source Selection</h3>
-                
-                <lightning-input 
-                    type="checkbox"
-                    label={propInputs.useCustomQuery.label}
-                    checked={propInputs.useCustomQuery.value}
-                    onchange={handleUseCustomQueryChange}
-                    data-key={propInputs.useCustomQuery.key}
-                    field-level-help={propInputs.useCustomQuery.help}
-                    class={propInputs.useCustomQuery.classes}>
+                <h3 class="slds-text-heading_small slds-m-bottom_small">List Settings</h3>
+
+                <lightning-input
+                    type={propInputs.relatedListName.type}
+                    label={propInputs.relatedListName.label}
+                    value={propInputs.relatedListName.value}
+                    onblur={handleRelatedListNameChange}
+                    data-key={propInputs.relatedListName.key}
+                    field-level-help={propInputs.relatedListName.help}
+                    required={propInputs.relatedListName.required}
+                    class={propInputs.relatedListName.classes}
+                    placeholder="e.g., Contacts, Opportunities, Cases">
+                </lightning-input>
+
+                <lightning-input
+                    type={propInputs.relationshipField.type}
+                    label={propInputs.relationshipField.label}
+                    value={propInputs.relationshipField.value}
+                    onblur={handleRelationshipFieldChange}
+                    data-key={propInputs.relationshipField.key}
+                    field-level-help={propInputs.relationshipField.help}
+                    required={propInputs.relationshipField.required}
+                    class={propInputs.relationshipField.classes}
+                    placeholder="e.g., AccountId (optional)">
+                </lightning-input>
+
+                <lightning-input
+                    type={propInputs.enabledFields.type}
+                    label={propInputs.enabledFields.label}
+                    value={propInputs.enabledFields.value}
+                    onblur={handleEnabledFieldsChange}
+                    data-key={propInputs.enabledFields.key}
+                    field-level-help={propInputs.enabledFields.help}
+                    required={propInputs.enabledFields.required}
+                    class={propInputs.enabledFields.classes}
+                    placeholder="e.g., Name,Email,Phone">
+                </lightning-input>
+
+                <lightning-input
+                    type={propInputs.fieldNames.type}
+                    label={propInputs.fieldNames.label}
+                    value={propInputs.fieldNames.value}
+                    onblur={handleFieldNamesChange}
+                    data-key={propInputs.fieldNames.key}
+                    field-level-help={propInputs.fieldNames.help}
+                    required={propInputs.fieldNames.required}
+                    class={propInputs.fieldNames.classes}
+                    placeholder="e.g., Asset Name,Product,Current Status">
                 </lightning-input>
             </div>
-
-            <!-- Related List API Mode Fields -->
-            <template if:true={showRelatedListSection}>
-                <div class="slds-m-bottom_large">
-                    <lightning-input 
-                        type={propInputs.relatedListName.type}
-                        label={propInputs.relatedListName.label}
-                        value={propInputs.relatedListName.value}
-                        onblur={handleRelatedListNameChange}
-                        data-key={propInputs.relatedListName.key}
-                        field-level-help={propInputs.relatedListName.help}
-                        required={propInputs.relatedListName.required}
-                        class={propInputs.relatedListName.classes}
-                        placeholder="e.g., Contacts, Opportunities, Cases">
-                    </lightning-input>
-
-                    <lightning-input 
-                        type={propInputs.relationshipField.type}
-                        label={propInputs.relationshipField.label}
-                        value={propInputs.relationshipField.value}
-                        onblur={handleRelationshipFieldChange}
-                        data-key={propInputs.relationshipField.key}
-                        field-level-help={propInputs.relationshipField.help}
-                        required={propInputs.relationshipField.required}
-                        class={propInputs.relationshipField.classes}
-                        placeholder="e.g., AccountId (optional)">
-                    </lightning-input>
-
-                    <lightning-input 
-                        type={propInputs.enabledFields.type}
-                        label={propInputs.enabledFields.label}
-                        value={propInputs.enabledFields.value}
-                        onblur={handleEnabledFieldsChange}
-                        data-key={propInputs.enabledFields.key}
-                        field-level-help={propInputs.enabledFields.help}
-                        required={propInputs.enabledFields.required}
-                        class={propInputs.enabledFields.classes}
-                        placeholder="e.g., Name,Email,Phone">
-                    </lightning-input>
-
-                    <lightning-input 
-                        type={propInputs.fieldNames.type}
-                        label={propInputs.fieldNames.label}
-                        value={propInputs.fieldNames.value}
-                        onblur={handleFieldNamesChange}
-                        data-key={propInputs.fieldNames.key}
-                        field-level-help={propInputs.fieldNames.help}
-                        required={propInputs.fieldNames.required}
-                        class={propInputs.fieldNames.classes}
-                        placeholder="e.g., Asset Name,Product,Current Status">
-                    </lightning-input>
-                </div>
-            </template>
-
-            <!-- Custom SOQL Mode Fields -->
-            <template if:true={showSOQLSection}>
-                <div class="slds-m-bottom_large">
-                    <lightning-button 
-                        variant="brand" 
-                        label={propInputs.soqlQuery.buttonLabel}
-                        title={propInputs.soqlQuery.buttonLabel}
-                        onclick={handleSoqlQueryClick}
-                        class="slds-m-bottom_medium">
-                    </lightning-button>
-
-                    <lightning-input 
-                        type={propInputs.displayFields.type}
-                        label={propInputs.displayFields.label}
-                        value={propInputs.displayFields.value}
-                        data-key={propInputs.displayFields.key}
-                        field-level-help={propInputs.displayFields.help}
-                        required={propInputs.displayFields.required}
-                        class={propInputs.displayFields.classes}
-                        readonly>
-                    </lightning-input>
-                </div>
-            </template>
 
             <!-- Display Mode Selection - ONLY for Standard -->
             <div class="slds-m-bottom_large slds-m-top_large">
@@ -382,9 +343,9 @@
     </lightning-tab>
 </template>
 
-        <!-- ===== FILES TYPE: FILES SETTINGS TAB ===== -->
+        <!-- ===== FILES TYPE: SETTINGS TAB ===== -->
         <template if:true={showFilesSettings}>
-            <lightning-tab label="Files Settings">
+            <lightning-tab label="Settings">
                 
                 <!-- Display Settings -->
                 <div class="slds-m-bottom_large">
@@ -432,160 +393,6 @@
                 </div>
             </lightning-tab>
         </template>
-
-        <!-- ===== ARTICLES TYPE: ARTICLES SETTINGS TAB ===== -->
-        <template if:true={showArticlesSettings}>
-            <lightning-tab label="Articles Settings">
-                <div class="slds-m-bottom_large">
-                    <h3 class="slds-text-heading_small slds-m-bottom_small">Articles Display Configuration</h3>
-
-                    <lightning-input 
-                        type={propInputs.initialArticlesToShow.type}
-                        label={propInputs.initialArticlesToShow.label}
-                        value={propInputs.initialArticlesToShow.value}
-                        onchange={handleInitialArticlesToShowChange}
-                        data-key={propInputs.initialArticlesToShow.key}
-                        field-level-help={propInputs.initialArticlesToShow.help}
-                        required={propInputs.initialArticlesToShow.required}
-                        class={propInputs.initialArticlesToShow.classes}
-                        min="1"
-                        max="10">
-                    </lightning-input>
-                </div>
-            </lightning-tab>
-        </template>
     </lightning-tabset>
-
-    <!-- ===== SOQL QUERY MODAL ===== -->
-    <template if:true={showSqlModal}>
-        <section role="dialog" tabindex="-1" class={modalClass} aria-modal="true">
-            <div class="slds-modal__container">
-                <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick={handleCloseSqlModal}>
-                    <lightning-icon
-                        icon-name="utility:close"
-                        size="small"
-                        alternative-text="Close">
-                    </lightning-icon>
-                    <span class="slds-assistive-text">Close</span>
-                </button>
-                <div class="slds-modal__header">
-                    <h2 class="slds-text-heading_medium">
-                        <lightning-icon 
-                            icon-name="utility:apex" 
-                            size="small" 
-                            class="slds-m-right_small">
-                        </lightning-icon>
-                        {propInputs.soqlQuery.label}
-                    </h2>
-                </div>
-                <div class="slds-modal__content slds-p-around_medium">
-                    
-                    <!-- SOQL Examples -->
-                    <div class="slds-m-bottom_medium">
-                        <p><strong>Example Queries:</strong></p>
-                        <div class="slds-box slds-theme_shade slds-text-longform">
-                            <h4 class="slds-text-heading_small">Basic Query:</h4>
-                            <code>
-                                SELECT Id, Name, Email FROM Contact<br/>
-                                WHERE AccountId = '$recordId'
-                            </code>
-                            
-                            <h4 class="slds-text-heading_small slds-m-top_small">Advanced Query with Relationships:</h4>
-                            <code>
-                                SELECT Id, Name, Email, Account.Name, Account.Type<br/>
-                                FROM Contact<br/>
-                                WHERE AccountId = '$recordId' AND IsActive__c = true<br/>
-                                ORDER BY LastName
-                            </code>
-                        </div>
-                    </div>
-
-                    <!-- Tips -->
-                    <div class="slds-m-bottom_medium">
-                        <p><strong>Tips:</strong></p>
-                        <ul class="slds-list_dotted">
-                            <li><strong>$recordId</strong> - Current record ID</li>
-                            <li><strong>$userId</strong> - Current user ID</li>
-                            <li><strong>Relationships</strong> - Use dot notation (e.g., Account.Name)</li>
-                            <li><strong>Filtering</strong> - Add WHERE clauses for specific data</li>
-                            <li><strong>Performance</strong> - Queries are limited to 50 records automatically</li>
-                        </ul>
-                    </div>
-
-                    <!-- SOQL Query Input -->
-                    <lightning-textarea
-                        value={propInputs.soqlQuery.value}
-                        label="SOQL Query"
-                        data-key={propInputs.soqlQuery.key}
-                        class="customTextArea"
-                        rows="8"
-                        field-level-help="Enter your SOQL query to retrieve the related records">
-                    </lightning-textarea>
-
-                    <!-- Parse Fields Button -->
-                    <div class="slds-m-top_medium slds-text-align_center">
-                        <lightning-button
-                            variant="outline-brand"
-                            label="Parse Fields from Query"
-                            title="Parse Fields from Query"
-                            onclick={handleParseFields}
-                            icon-name="utility:refresh"
-                            class="slds-m-bottom_medium">
-                        </lightning-button>
-                    </div>
-
-                    <!-- Field Selection -->
-                    <template if:true={hasAvailableFields}>
-                        <div class="slds-m-top_medium">
-                            <h3 class="slds-text-heading_small slds-m-bottom_small">Select and Order Display Fields</h3>
-                            <lightning-dual-listbox
-                                name="fieldSelection"
-                                label="Field Selection"
-                                source-label="Available Fields"
-                                selected-label="Selected Fields (display order)"
-                                options={availableFields}
-                                value={selectedFields}
-                                onchange={handleFieldOrderChange}
-                                size="8"
-                                min="1"
-                                class="slds-m-bottom_medium">
-                            </lightning-dual-listbox>
-                            <div class="slds-text-body_small slds-text-color_weak">
-                                Order determines column order in the table. The first field will be used for record linking if enabled.
-                            </div>
-                        </div>
-                    </template>
-
-                    <!-- Message when no fields parsed yet -->
-                    <template if:false={hasAvailableFields}>
-                        <div class="slds-m-top_medium">
-                            <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" role="alert">
-                                <span class="slds-assistive-text">info</span>
-                                <lightning-icon 
-                                    icon-name="utility:info" 
-                                    size="x-small" 
-                                    alternative-text="info"
-                                    class="slds-m-right_x-small">
-                                </lightning-icon>
-                                <h2>
-                                    Click "Parse Fields from Query" to load field selection options.
-                                </h2>
-                            </div>
-                        </div>
-                    </template>
-
-                </div>
-                <div class="slds-modal__footer">
-                    <button class="slds-button slds-button_brand" onclick={handleSaveSoqlQuery}>Save Query</button>
-                    <button class="slds-button slds-button_neutral" onclick={handleCloseSqlModal}>Cancel</button>
-                </div>
-            </div>
-        </section>
-    </template>
-
-    <!-- Modal Backdrop -->
-    <template if:true={displayBackdrop}>
-        <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
-    </template>
 
 </template>

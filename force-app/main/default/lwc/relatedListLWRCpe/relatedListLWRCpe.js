@@ -4,12 +4,6 @@ const defaultCSSClasses = 'slds-m-bottom_medium';
 
 export default class SlotTestCpe extends LightningElement {
 
-    @track showSqlModal = false;
-    @track availableFields = [];
-    @track selectedFields = [];
-    @track fieldsInitialized = false;
-    lastInitializedQuery = '';
-
     @track propInputs = {
         recordId: {
             key: 'recordId',
@@ -127,17 +121,6 @@ export default class SlotTestCpe extends LightningElement {
             doSetDefaultValue: true,
             classes: defaultCSSClasses
         },
-        useCustomQuery: {
-            key: 'useCustomQuery',
-            label: 'Use Custom SOQL Query',
-            type: 'checkbox',
-            help: 'Enable Custom SOQL Mode for advanced & flexible queries with full SOQL control, custom WHERE clauses, and relationship fields. Leave unchecked to use Related List API Mode for fast & automatic performance with Salesforce\'s built-in API.',
-            required: false,
-            valuePath: 'useCustomQuery',
-            value: false,
-            doSetDefaultValue: true,
-            classes: defaultCSSClasses
-        },
         relatedListName: {
             key: 'relatedListName',
             label: 'Related List Name',
@@ -178,29 +161,6 @@ export default class SlotTestCpe extends LightningElement {
             help: 'Comma-separated custom column headers (e.g., "Asset Name,Product,Status"). Maps 1:1 with Enabled Fields. Leave blank to use default field labels.',
             required: false,
             valuePath: 'fieldNames',
-            value: '',
-            doSetDefaultValue: true,
-            classes: defaultCSSClasses
-        },
-        soqlQuery: { 
-            key: 'soqlQuery',
-            label: 'SOQL Query',
-            buttonLabel: 'Set Query',
-            type: 'modal',
-            help: 'Custom SOQL query with field parsing and selection tools. Used in Custom SOQL mode.',
-            required: false,
-            valuePath: 'soqlQuery',
-            value: '',
-            doSetDefaultValue: true,
-            classes: defaultCSSClasses + ' customTextArea slds-grid slds-size_1-of-1'
-        },
-        displayFields: {
-            key: 'displayFields',
-            label: 'Display Fields',
-            type: 'text',
-            help: 'Comma-separated list of fields to display. Order determines column order. Auto-populated from SOQL query parsing.',
-            required: false,
-            valuePath: 'displayFields',
             value: '',
             doSetDefaultValue: true,
             classes: defaultCSSClasses
@@ -444,22 +404,8 @@ export default class SlotTestCpe extends LightningElement {
                 
                 if (this.propInputs[key].value !== tmpVal) {
                     this.propInputs[key].value = tmpVal;
-                    
-                    if (key === 'soqlQuery') {
-                        if (!this.isStringEmpty(this.propInputs[key].value)) {
-                            this.propInputs[key].buttonLabel = 'Edit Query';
-                        }
-                    }
                 }
             }
-        }
-
-        if (!this.fieldsInitialized || !valuetmp.soqlQuery || valuetmp.soqlQuery !== this.lastInitializedQuery) {
-            this.initializeDualListbox(valuetmp);
-            this.lastInitializedQuery = valuetmp.soqlQuery;
-        } else {
-            const displayFields = valuetmp.displayFields || '';
-            this.selectedFields = displayFields ? displayFields.split(',').map(f => f.trim()).filter(f => f) : [];
         }
 
         this._value = value;
@@ -470,18 +416,6 @@ export default class SlotTestCpe extends LightningElement {
         }
     }
 
-    get modalClass() {
-        return 'slds-modal slds-modal_large slds-fade-in-open';
-    }
-
-    get displayBackdrop() {
-        return this.showSqlModal;
-    }
-
-    get hasAvailableFields() {
-        return this.fieldsInitialized && this.availableFields && this.availableFields.length > 0;
-    }
-
     get showTableOnlySettings() {
         return this.propInputs.displayMode.value === 'table';
     }
@@ -490,59 +424,12 @@ export default class SlotTestCpe extends LightningElement {
         return this.propInputs.displayMode.value === 'cards';
     }
 
-    get showRelatedListSection() {
-        return !this.propInputs.useCustomQuery.value;
-    }
-
-    get showSOQLSection() {
-        return this.propInputs.useCustomQuery.value;
-    }
-
     get showSldsIconInput() {
         return this.propInputs.iconType.value === 'slds';
     }
 
     get showIconSlotMessage() {
         return this.propInputs.iconType.value === 'slot';
-    }
-
-    initializeDualListbox(config) {
-        const soqlQuery = config.soqlQuery || '';
-        const displayFields = config.displayFields || '';
-        
-        this.availableFields = this.parseFieldsFromSoql(soqlQuery);
-        this.selectedFields = displayFields ? displayFields.split(',').map(f => f.trim()).filter(f => f) : [];
-        
-        this.fieldsInitialized = this.availableFields.length > 0;
-    }
-
-    parseFieldsFromSoql(soqlQuery) {
-        if (!soqlQuery) {
-            return [];
-        }
-        
-        try {
-            const normalizedQuery = soqlQuery.replace(/\s+/g, ' ').trim();
-            const selectMatch = normalizedQuery.match(/SELECT\s+(.*?)\s+FROM/i);
-            
-            if (!selectMatch) {
-                return [];
-            }
-            
-            const fieldsString = selectMatch[1];
-            const fields = fieldsString.split(',').map(field => {
-                const cleanField = field.trim();
-                return {
-                    label: cleanField,
-                    value: cleanField
-                };
-            });
-            
-            return fields;
-        } catch (e) {
-            //console.error('Error parsing SOQL:', e);
-            return [];
-        }
     }
 
     handleRecordIdChange(e) {
@@ -729,19 +616,6 @@ export default class SlotTestCpe extends LightningElement {
         }
     }
 
-    handleUseCustomQueryChange(e) {
-        try {
-            const newValue = this.getEventValue(e, true);
-            this.propInputs.useCustomQuery.value = newValue;
-            let tmpvalueObj = this.getValueObj();
-            tmpvalueObj.useCustomQuery = this.propInputs.useCustomQuery.value;
-            this.dispatchEvent(new CustomEvent("valuechange", 
-                {detail: {value: JSON.stringify(tmpvalueObj)}}));
-        } catch (error) {
-            //console.error('Error in handleUseCustomQueryChange:', error);
-        }
-    }
-
     handleRelatedListNameChange(e) {
         try {
             const inputElement = this.template.querySelector(`[data-key="${this.propInputs.relatedListName.key}"]`);
@@ -815,91 +689,6 @@ export default class SlotTestCpe extends LightningElement {
             }
         } catch (error) {
             //console.error('Error in handleRelationshipFieldChange:', error);
-        }
-    }
-
-    handleSoqlQueryClick(e) {
-        try {
-            this.showSqlModal = true;
-        } catch (error) {
-            //console.error('Error in handleSoqlQueryClick:', error);
-        }
-    }
-
-    handleParseFields(e) {
-        try {
-            let tmpEl = this.template.querySelector('[data-key="' + this.propInputs.soqlQuery.key + '"]');
-            if (tmpEl && tmpEl.value) {
-                this.availableFields = this.parseFieldsFromSoql(tmpEl.value);
-                this.fieldsInitialized = true;
-            } else {
-                this.availableFields = [];
-                this.fieldsInitialized = false;
-            }
-        } catch (error) {
-            //console.error('Error in handleParseFields:', error);
-        }
-    }
-
-    handleCloseSqlModal(e) {
-        try {
-            this.showSqlModal = false;
-        } catch (error) {
-            //console.error('Error in handleCloseSqlModal:', error);
-        }
-    }
-
-    handleSaveSoqlQuery(e) {
-        try {
-            let tmpEl = this.template.querySelector('[data-key="' + this.propInputs.soqlQuery.key + '"]');
-            
-            this.propInputs.soqlQuery.value = tmpEl ? tmpEl.value : '';
-            
-            let tmpvalueObj = this.getValueObj();
-            tmpvalueObj.soqlQuery = this.propInputs.soqlQuery.value;
-            
-            this.propInputs.soqlQuery.buttonLabel = (this.isStringEmpty(this.propInputs.soqlQuery.value) === false) ? 'Edit Query' : 'Set Query';
-            
-            const newAvailableFields = this.parseFieldsFromSoql(this.propInputs.soqlQuery.value);
-            
-            if (JSON.stringify(newAvailableFields) !== JSON.stringify(this.availableFields)) {
-                this.availableFields = newAvailableFields;
-                this.fieldsInitialized = newAvailableFields.length > 0;
-            }
-            
-            if (this.selectedFields.length === 0 && this.availableFields.length > 0) {
-                this.selectedFields = this.availableFields.map(field => field.value);
-            }
-            
-            this.propInputs.displayFields.value = this.selectedFields.join(', ');
-            tmpvalueObj.displayFields = this.propInputs.displayFields.value;
-            
-            this.dispatchEvent(new CustomEvent("valuechange", 
-                {detail: {value: JSON.stringify(tmpvalueObj)}}));
-            
-            this.handleCloseSqlModal();
-        } catch (error) {
-            //console.error('Error in handleSaveSoqlQuery:', error);
-        }
-    }
-
-    handleFieldOrderChange(e) {
-        try {
-            const newValue = this.getEventValue(e);
-            this.selectedFields = Array.isArray(newValue) ? newValue : [];
-            
-            this.propInputs.displayFields.value = this.selectedFields.join(', ');
-            
-            let tmpvalueObj = this.getValueObj();
-            tmpvalueObj.displayFields = this.propInputs.displayFields.value;
-            tmpvalueObj.soqlQuery = this.propInputs.soqlQuery.value;
-            
-            this._value = JSON.stringify(tmpvalueObj);
-            
-            this.dispatchEvent(new CustomEvent("valuechange", 
-                {detail: {value: this._value}}));
-        } catch (error) {
-            //console.error('Error in handleFieldOrderChange:', error);
         }
     }
 

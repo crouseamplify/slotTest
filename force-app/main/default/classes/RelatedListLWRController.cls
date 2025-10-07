@@ -1,93 +1,6 @@
 public with sharing class RelatedListLWRController {
     
-    // ===== EXISTING SOQL METHODS =====
-    
-    @AuraEnabled(cacheable=false)
-    public static QueryResult executeQuery(String soqlQuery, String recordId) {
-        QueryResult result = new QueryResult();
-        result.records = new List<sObject>();
-        result.error = null;
-        
-        try {
-            if (String.isBlank(soqlQuery)) {
-                result.error = 'SOQL query is required';
-                return result;
-            }
-            
-            // Enhanced variable replacement with better security
-            String processedQuery = processQueryVariables(soqlQuery, recordId);
-            
-            // Enhanced query validation
-            validateQuery(processedQuery);
-            
-            // Add automatic LIMIT if not present (prevent runaway queries)
-            if (!processedQuery.toUpperCase().contains('LIMIT')) {
-                processedQuery += ' LIMIT 50';
-            }
-            
-            System.debug('RelatedListLWR: Executing SOQL: ' + processedQuery);
-            Long startTime = System.currentTimeMillis();
-            
-            result.records = Database.query(processedQuery);
-            
-            Long endTime = System.currentTimeMillis();
-            System.debug('RelatedListLWR: Query returned ' + result.records.size() + ' records in ' + (endTime - startTime) + 'ms');
-            
-        } catch (QueryException qe) {
-            System.debug('RelatedListLWR: Query error: ' + qe.getMessage());
-            result.error = 'Query error: ' + qe.getMessage();
-        } catch (Exception e) {
-            System.debug('RelatedListLWR: Unexpected error: ' + e.getMessage());
-            result.error = 'Error executing query: ' + e.getMessage();
-        }
-        
-        return result;
-    }
-    
-    @AuraEnabled(cacheable=true)
-    public static List<FieldInfo> getFieldInfo(String objectApiName, String fieldList) {
-        List<FieldInfo> fields = new List<FieldInfo>();
-        
-        try {
-            if (String.isBlank(objectApiName) || String.isBlank(fieldList)) {
-                System.debug('RelatedListLWR: Missing objectApiName or fieldList');
-                return fields;
-            }
-            
-            System.debug('RelatedListLWR: Getting field info for ' + objectApiName + ', fields: ' + fieldList);
-            
-            Schema.SObjectType sObjectType = Schema.getGlobalDescribe().get(objectApiName);
-            if (sObjectType == null) {
-                System.debug('RelatedListLWR: Object type not found: ' + objectApiName);
-                return fields;
-            }
-            
-            Schema.DescribeSObjectResult describe = sObjectType.getDescribe();
-            Map<String, Schema.SObjectField> fieldMap = describe.fields.getMap();
-            
-            List<String> fieldNames = parseFieldList(fieldList);
-            for (String fieldName : fieldNames) {
-                if (String.isNotBlank(fieldName)) {
-                    FieldInfo fieldInfo = processField(fieldName.trim(), fieldMap);
-                    if (fieldInfo != null) {
-                        fields.add(fieldInfo);
-                        System.debug('RelatedListLWR: Added field: ' + fieldInfo.apiName + ' (' + fieldInfo.label + ')');
-                    } else {
-                        System.debug('RelatedListLWR: Could not process field: ' + fieldName);
-                    }
-                }
-            }
-            
-            System.debug('RelatedListLWR: Processed ' + fields.size() + ' fields successfully');
-            
-        } catch (Exception e) {
-            System.debug('RelatedListLWR: Error getting field info: ' + e.getMessage());
-        }
-        
-        return fields;
-    }
-    
-    // ===== NEW ARL (RELATED LIST API) METHODS =====
+    // ===== ARL (RELATED LIST API) METHODS =====
     
     @AuraEnabled(cacheable=true)
     public static String getObjectTypeFromRecordId(String recordId) {
@@ -157,79 +70,6 @@ public with sharing class RelatedListLWRController {
     }
     
     // ===== SHARED UTILITY METHODS =====
-    
-    // Enhanced query variable processing with better security
-    private static String processQueryVariables(String soqlQuery, String recordId) {
-        String processedQuery = soqlQuery;
-        
-        // Replace $recordId with proper escaping
-        if (String.isNotBlank(recordId)) {
-            // Validate recordId format for security
-            if (isValidRecordId(recordId)) {
-                processedQuery = processedQuery.replace('$recordId', recordId);
-            } else {
-                throw new QueryException('Invalid recordId format provided');
-            }
-        }
-        
-        // Replace $userId with current user ID
-        String currentUserId = UserInfo.getUserId();
-        processedQuery = processedQuery.replace('$userId', currentUserId);
-        
-        // Replace other common variables
-        processedQuery = processedQuery.replace('$orgId', UserInfo.getOrganizationId());
-        
-        return processedQuery;
-    }
-    
-    // Validate recordId format for security
-    private static Boolean isValidRecordId(String recordId) {
-        try {
-            Id testId = Id.valueOf(recordId);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-    
-    // Enhanced query validation
-    private static void validateQuery(String query) {
-        String upperQuery = query.toUpperCase();
-        
-        // Block potentially dangerous operations
-        List<String> blockedOperations = new List<String>{
-            'DELETE', 'INSERT', 'UPDATE', 'UPSERT', 'MERGE'
-        };
-        
-        for (String operation : blockedOperations) {
-            if (upperQuery.contains(operation)) {
-                throw new QueryException('Operation not allowed: ' + operation);
-            }
-        }
-        
-        // Ensure it's a SELECT statement
-        if (!upperQuery.trim().startsWith('SELECT')) {
-            throw new QueryException('Only SELECT queries are allowed');
-        }
-    }
-    
-    // Enhanced field list parsing
-    private static List<String> parseFieldList(String fieldList) {
-        List<String> fieldNames = new List<String>();
-        
-        if (String.isNotBlank(fieldList)) {
-            List<String> rawFields = fieldList.split(',');
-            for (String field : rawFields) {
-                String trimmedField = field.trim();
-                if (String.isNotBlank(trimmedField)) {
-                    fieldNames.add(trimmedField);
-                }
-            }
-        }
-        
-        return fieldNames;
-    }
-    
     // ===== ARL-SPECIFIC METHODS =====
     
     private static RelationshipMapping findRelatedListMapping(String parentObjectType, String searchName, String relationshipField) {
@@ -527,11 +367,6 @@ public with sharing class RelatedListLWRController {
     // ===== WRAPPER CLASSES =====
     
     // Enhanced wrapper classes that work for both SOQL and ARL modes
-    public class QueryResult {
-        @AuraEnabled public List<sObject> records;
-        @AuraEnabled public String error;
-    }
-    
     public class FieldInfo {
         @AuraEnabled public String apiName;
         @AuraEnabled public String label;

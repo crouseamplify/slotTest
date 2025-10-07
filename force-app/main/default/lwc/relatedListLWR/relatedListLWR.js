@@ -1,7 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import executeQuery from '@salesforce/apex/RelatedListLWRController.executeQuery';
-import getFieldInfo from '@salesforce/apex/RelatedListLWRController.getFieldInfo';
 import getRelatedListInfo from '@salesforce/apex/RelatedListLWRController.getRelatedListInfo';
 import getObjectTypeFromRecordId from '@salesforce/apex/RelatedListLWRController.getObjectTypeFromRecordId';
 import getCaseArticles from '@salesforce/apex/RelatedListLWRController.getCaseArticles';
@@ -89,8 +87,6 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     _cachedUiSignature = null;
     _lastSignatureInputs = {
         recordId: null,
-        soqlQuery: null,
-        displayFields: null,
         relatedListName: null,
         relationshipField: null,
         enabledFields: null,
@@ -289,20 +285,6 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         this._lastConfigJSONForGetters = this.configJSONString;
     }
     
-    // Data Source Mode - KEY PROPERTY
-    get useCustomQuery() {
-        return this.configObj.useCustomQuery || false;
-    }
-    
-    // SOQL Mode Properties
-    get soqlQuery() {
-        return this.configObj.soqlQuery || '';
-    }
-    
-    get displayFields() {
-        return this.configObj.displayFields || '';
-    }
-    
     // ARL Mode Properties
     get relatedListName() {
         return this.configObj.relatedListName || '';
@@ -443,8 +425,6 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         // Fix #3: Only regenerate signature if relevant properties changed
         const currentInputs = {
             recordId: this.currentRecordId,
-            soqlQuery: this.soqlQuery,
-            displayFields: this.displayFields,
             relatedListName: this.relatedListName,
             relationshipField: this.relationshipField,
             enabledFields: this.enabledFields,
@@ -471,14 +451,6 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
                 this._cachedDataSignature = JSON.stringify({
                     mode: 'files',
                     recordId: this.currentRecordId
-                });
-            } else if (this.useCustomQuery) {
-                // SOQL mode signature
-                this._cachedDataSignature = JSON.stringify({
-                    mode: 'soql',
-                    recordId: this.currentRecordId,
-                    soqlQuery: this.soqlQuery,
-                    displayFields: this.displayFields
                 });
             } else {
                 // ARL mode signature
@@ -554,7 +526,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
     
     get dataSourceMode() {
-        return this.useCustomQuery ? 'Custom SOQL' : 'Related List API';
+        return 'Related List API';
     }
     
     // ===== UI STATE GETTERS =====
@@ -720,22 +692,6 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             const hasRecordId = !!(this.currentRecordId);
             this.debugLog('Files Validation:', { hasRecordId });
             return hasRecordId;
-        } else if (this.useCustomQuery) {
-            // SOQL mode validation (existing logic)
-            const hasQuery = !!(this.soqlQuery && this.soqlQuery.trim() !== '');
-            const usesRecordIdVariable = this.soqlQuery && this.soqlQuery.includes('$recordId');
-            const hasRecordId = !!(this.currentRecordId);
-            const recordIdValid = !usesRecordIdVariable || hasRecordId;
-            
-            this.debugLog('SOQL Validation:', {
-                hasQuery,
-                hasRecordId,
-                usesRecordIdVariable,
-                recordIdValid,
-                canProceed: hasQuery && recordIdValid
-            });
-            
-            return hasQuery && recordIdValid;
         } else {
             // ARL mode validation (existing logic)
             const hasRelatedListName = !!(this.relatedListName);
@@ -797,9 +753,6 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         if (!this.showDebugInfo) return;
         
         this.debugLog('=== SlotTest Configuration Debug ===');
-        this.debugLog('useCustomQuery:', this.useCustomQuery);
-        this.debugLog('soqlQuery:', this.soqlQuery);
-        this.debugLog('displayFields:', this.displayFields);
         this.debugLog('configured recordId:', this.configObj.recordId);
         this.debugLog('API recordId (from Experience Cloud):', this.recordId);
         this.debugLog('currentRecordId (final resolved):', this.currentRecordId);
@@ -853,14 +806,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     
     async detectObjectTypeAndLoadData() {
         this.debugLog('detectObjectTypeAndLoadData called with recordId:', this.currentRecordId);
-        
-        // If we have a SOQL query that doesn't use $recordId, skip recordId validation
-        if (this.useCustomQuery && this.soqlQuery && !this.soqlQuery.includes('$recordId')) {
-            this.debugLog('SOQL query does not use $recordId, proceeding without record context');
-            this.loadData();
-            return;
-        }
-        
+
         if (!this.currentRecordId) {
             this.debugLog('No valid record ID for processing');
             this.clearData();
@@ -907,8 +853,6 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
                 await this.loadArticles();
             } else if (this.isFilesType) {
                 await this.loadFiles();
-            } else if (this.useCustomQuery) {
-                await this.loadDataWithSOQL();
             } else {
                 await this.loadDataWithARL();
             }
@@ -939,30 +883,11 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         }
         
         try {
-            if (this.useCustomQuery) {
-                // For SOQL mode, rebuild columns from field info
-                const objectName = this.extractObjectNameFromQuery(this.soqlQuery);
-                if (objectName) {
-                    const fieldInfos = await getFieldInfo({ 
-                        objectApiName: objectName, 
-                        fieldList: this.displayFields 
-                    });
-                    this.columns = this.buildColumnsFromSOQL(fieldInfos);
-                }
-            } else {
-                // For ARL mode, we'd need to call the API again
-                // For now, just reprocess existing records
-                this.debugLog('ARL column rebuild requires data reload');
-                this.loadData();
-                return;
-            }
-            
-            // Reprocess records for new linking configuration
-            this.allRecords = this.reprocessRecordsForLinking(this.allRecords);
-            this.updateDisplayedRecords();
-            
-            // Update UI signature
-            this.lastUISignature = this.uiSignature;
+            // For ARL mode, we'd need to call the API again
+            // For now, just reprocess existing records
+            this.debugLog('ARL column rebuild requires data reload');
+            this.loadData();
+            return;
             
         } catch (error) {
             this.logError('Error rebuilding columns:', error);
@@ -984,9 +909,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             }
             
             // Re-flatten relationship fields for ARL mode
-            if (!this.useCustomQuery) {
-                this.flattenRelationshipFieldsForARL(processedRecord, records.length > 0 ? records[0] : {});
-            }
+            this.flattenRelationshipFieldsForARL(processedRecord, records.length > 0 ? records[0] : {});
             
             return processedRecord;
         });
@@ -1138,167 +1061,12 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
 
     // ===== SOQL MODE DATA LOADING =====
     
-    async loadDataWithSOQL() {
-        this.debugLog('Using SOQL data loading method');
-        this.debugLog('SOQL Query:', this.soqlQuery);
-        this.debugLog('Display Fields:', this.displayFields);
-        
-        const [fieldInfos, queryResult] = await Promise.all([
-            this.getFieldInfos(),
-            this.executeQuery()
-        ]);
-        
-        this.debugLog('Field Infos received:', fieldInfos);
-        this.debugLog('Query Result received:', queryResult);
-        
-        this.columns = this.buildColumnsFromSOQL(fieldInfos);
-        this.allRecords = this.flattenRecords(queryResult.records || []);
-        this.currentOffset = 0;
-        this.updateDisplayedRecords();
-        
-        this.debugLog('SOQL data loading completed');
-        this.debugLog('Columns:', this.columns);
-        this.debugLog('Records:', this.allRecords);
-    }
-    
-    // Enhanced getFieldInfos with better error handling and field parsing
-    async getFieldInfos() {
-        // If displayFields is empty, parse it from the query
-        let fieldsToUse = this.displayFields;
-        
-        if (!fieldsToUse || fieldsToUse.trim() === '') {
-            this.debugLog('displayFields is empty, parsing from SOQL query');
-            fieldsToUse = this.parseFieldsFromQuery(this.soqlQuery);
-        }
-        
-        if (!fieldsToUse || fieldsToUse.trim() === '') {
-            this.debugWarn('No fields available for processing');
-            return [];
-        }
-        
-        const objectName = this.extractObjectNameFromQuery(this.soqlQuery);
-        if (!objectName) {
-            throw new Error('Could not determine object type from SOQL query');
-        }
-        
-        this.debugLog('Getting field info for object:', objectName, 'fields:', fieldsToUse);
-        
-        return await getFieldInfo({ 
-            objectApiName: objectName, 
-            fieldList: fieldsToUse 
-        });
-    }
-    
-    // Parse fields from SOQL query as backup
-    parseFieldsFromQuery(query) {
-        try {
-            if (!query || query.trim() === '') {
-                return '';
-            }
-            
-            const normalizedQuery = query.replace(/\s+/g, ' ').trim();
-            const selectMatch = normalizedQuery.match(/SELECT\s+(.*?)\s+FROM/i);
-            
-            if (!selectMatch) {
-                this.debugWarn('Could not parse SELECT fields from query');
-                return '';
-            }
-            
-            const fieldsString = selectMatch[1];
-            // Clean up the fields and return as comma-separated string
-            const fields = fieldsString.split(',').map(field => field.trim()).filter(field => field);
-            
-            this.debugLog('Parsed fields from query:', fields);
-            return fields.join(', ');
-        } catch (error) {
-            this.logError('Error parsing fields from query:', error);
-            return '';
-        }
-    }
-    
-    async executeQuery() {
-        this.debugLog('Executing SOQL query:', this.soqlQuery);
-        
-        const result = await executeQuery({ 
-            soqlQuery: this.soqlQuery, 
-            recordId: this.currentRecordId
-        });
-        
-        this.debugLog('Query execution result:', result);
-        
-        if (result.error) {
-            throw new Error(result.error);
-        }
-        
-        return result;
-    }
-    
-    extractObjectNameFromQuery(query) {
-        try {
-            const fromMatch = query.match(/FROM\s+(\w+)/i);
-            return fromMatch ? fromMatch[1] : null;
-        } catch (error) {
-            this.logError('Error extracting object name:', error);
-            return null;
-        }
-    }
-    
-    buildColumnsFromSOQL(fieldInfos) {
-        this.debugLog('Building columns from field infos:', fieldInfos);
-        
-        return fieldInfos.map((fieldInfo, index) => {
-            const fieldType = this.mapFieldTypeToDataTableType(fieldInfo.type);
-            const column = {
-                label: this.getCustomFieldLabel(fieldInfo, index),
-                fieldName: fieldInfo.apiName,
-                type: (fieldInfo.type === 'DATETIME' || fieldInfo.type === 'DATE') ? 'text' : fieldType,
-                isDateTime: fieldInfo.type === 'DATETIME',
-                isDate: fieldInfo.type === 'DATE',
-                sortable: !this.columnSortingDisabled,
-                wrapText: true
-            };
-            
-            if (this.defaultColumnWidth && this.defaultColumnWidth > 0) {
-                column.fixedWidth = this.defaultColumnWidth;
-            }
-            
-            // Enable linking on first column if configured
-            if (index === 0 && this.enableRecordLinking && this.recordPageUrl) {
-                column.type = 'url';
-                column.typeAttributes = {
-                    label: { fieldName: fieldInfo.apiName },
-                    target: '_blank'
-                };
-                column.fieldName = 'recordUrl';
-            }
-            
-            this.debugLog('Created column:', column);
-            
-            return column;
-        });
-    }
-        
     flattenRecords(records) {
         this.debugLog('Flattening records:', records);
-        
+
         return records.map(record => {
             const flatRecord = { ...record };
-            
-            // Handle relationship fields for SOQL mode
-            if (this.displayFields) {
-                const fieldNames = this.displayFields.split(',').map(f => f.trim());
-                fieldNames.forEach(fieldName => {
-                    if (fieldName.includes('.')) {
-                        const [relationshipName, targetField] = fieldName.split('.');
-                        if (record[relationshipName] && record[relationshipName][targetField]) {
-                            flatRecord[fieldName] = record[relationshipName][targetField];
-                        } else {
-                            flatRecord[fieldName] = null;
-                        }
-                    }
-                });
-            }
-            
+
             // Format datetime and date fields
             this.columns.forEach(col => {
                 if (col.isDateTime && flatRecord[col.fieldName]) {
@@ -1870,9 +1638,9 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
             }
             
             // For URL columns, use the original field value for sorting
-            if (fieldName === 'recordUrl' && this.displayFields) {
-                // Get the first display field as it's used for the URL column
-                const firstField = this.displayFields.split(',')[0]?.trim();
+            if (fieldName === 'recordUrl' && this.columns.length > 0) {
+                // Get the first column's field name
+                const firstField = this.columns[0].fieldName;
                 if (firstField && record[firstField]) {
                     return record[firstField];
                 }
