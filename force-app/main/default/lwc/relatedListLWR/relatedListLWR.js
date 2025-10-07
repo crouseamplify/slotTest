@@ -245,9 +245,9 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     get showViewMore() {
         this._perfMetrics.configGetterAccessCount++;
 
-        // Fix #9: Cache config-only getter
+        // Fix #9: Cache config-only getter - update all caches when config changes
         if (this.configJSONString !== this._lastConfigJSONForGetters) {
-            this._cachedConfigGetters.showViewMore = this.configObj.showViewMore || false;
+            this._updateAllConfigGetterCaches();
         } else {
             this._perfMetrics.configGetterCacheHits++;
         }
@@ -257,9 +257,8 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     get showViewAll() {
         this._perfMetrics.configGetterAccessCount++;
 
-        // Fix #9: Cache config-only getter
         if (this.configJSONString !== this._lastConfigJSONForGetters) {
-            this._cachedConfigGetters.showViewAll = this.configObj.showViewAll || false;
+            this._updateAllConfigGetterCaches();
         } else {
             this._perfMetrics.configGetterCacheHits++;
         }
@@ -267,11 +266,27 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
 
     get viewAllUrl() {
-        // Fix #9: Cache config-only getter
         if (this.configJSONString !== this._lastConfigJSONForGetters) {
-            this._cachedConfigGetters.viewAllUrl = this.configObj.viewAllUrl || '';
+            this._updateAllConfigGetterCaches();
         }
         return this._cachedConfigGetters.viewAllUrl;
+    }
+
+    // Fix #9: Helper to update all config getter caches at once
+    _updateAllConfigGetterCaches() {
+        this._cachedConfigGetters.showViewMore = this.configObj.showViewMore || false;
+        this._cachedConfigGetters.showViewAll = this.configObj.showViewAll || false;
+        this._cachedConfigGetters.viewAllUrl = this.configObj.viewAllUrl || '';
+        this._cachedConfigGetters.hideCheckboxColumn = this.configObj.hideCheckboxColumn !== undefined ? this.configObj.hideCheckboxColumn : true;
+        this._cachedConfigGetters.showRowNumberColumn = this.configObj.showRowNumberColumn !== undefined ? this.configObj.showRowNumberColumn : false;
+        this._cachedConfigGetters.resizeColumnDisabled = this.configObj.resizeColumnDisabled || false;
+        this._cachedConfigGetters.columnSortingDisabled = this.configObj.columnSortingDisabled || false;
+        this._cachedConfigGetters.enableInfiniteLoading = this.configObj.enableInfiniteLoading || false;
+        this._cachedConfigGetters.initialRecordsToLoad = this.configObj.initialRecordsToLoad || 6;
+        this._cachedConfigGetters.defaultColumnWidth = this.configObj.defaultColumnWidth || null;
+
+        // Mark caches as updated
+        this._lastConfigJSONForGetters = this.configJSONString;
     }
     
     // Data Source Mode - KEY PROPERTY
@@ -351,59 +366,50 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     
     // Table Configuration
     get initialRecordsToLoad() {
-        // Fix #9: Cache config-only getter
         if (this.configJSONString !== this._lastConfigJSONForGetters) {
-            this._cachedConfigGetters.initialRecordsToLoad = this.configObj.initialRecordsToLoad || 6;
+            this._updateAllConfigGetterCaches();
         }
         return this._cachedConfigGetters.initialRecordsToLoad;
     }
 
     get defaultColumnWidth() {
-        // Fix #9: Cache config-only getter
         if (this.configJSONString !== this._lastConfigJSONForGetters) {
-            this._cachedConfigGetters.defaultColumnWidth = this.configObj.defaultColumnWidth || null;
-            // Mark that we've updated all cached getters
-            this._lastConfigJSONForGetters = this.configJSONString;
+            this._updateAllConfigGetterCaches();
         }
         return this._cachedConfigGetters.defaultColumnWidth;
     }
-    
+
     get hideCheckboxColumn() {
-        // Fix #9: Cache config-only getter
         if (this.configJSONString !== this._lastConfigJSONForGetters) {
-            this._cachedConfigGetters.hideCheckboxColumn = this.configObj.hideCheckboxColumn !== undefined ? this.configObj.hideCheckboxColumn : true;
+            this._updateAllConfigGetterCaches();
         }
         return this._cachedConfigGetters.hideCheckboxColumn;
     }
 
     get showRowNumberColumn() {
-        // Fix #9: Cache config-only getter
         if (this.configJSONString !== this._lastConfigJSONForGetters) {
-            this._cachedConfigGetters.showRowNumberColumn = this.configObj.showRowNumberColumn !== undefined ? this.configObj.showRowNumberColumn : false;
+            this._updateAllConfigGetterCaches();
         }
         return this._cachedConfigGetters.showRowNumberColumn;
     }
 
     get resizeColumnDisabled() {
-        // Fix #9: Cache config-only getter
         if (this.configJSONString !== this._lastConfigJSONForGetters) {
-            this._cachedConfigGetters.resizeColumnDisabled = this.configObj.resizeColumnDisabled || false;
+            this._updateAllConfigGetterCaches();
         }
         return this._cachedConfigGetters.resizeColumnDisabled;
     }
 
     get columnSortingDisabled() {
-        // Fix #9: Cache config-only getter
         if (this.configJSONString !== this._lastConfigJSONForGetters) {
-            this._cachedConfigGetters.columnSortingDisabled = this.configObj.columnSortingDisabled || false;
+            this._updateAllConfigGetterCaches();
         }
         return this._cachedConfigGetters.columnSortingDisabled;
     }
 
     get enableInfiniteLoading() {
-        // Fix #9: Cache config-only getter
         if (this.configJSONString !== this._lastConfigJSONForGetters) {
-            this._cachedConfigGetters.enableInfiniteLoading = this.configObj.enableInfiniteLoading || false;
+            this._updateAllConfigGetterCaches();
         }
         return this._cachedConfigGetters.enableInfiniteLoading;
     }
