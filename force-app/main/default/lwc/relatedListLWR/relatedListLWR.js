@@ -68,6 +68,24 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     // Cached config object (Fix #1: Cache JSON.parse result)
     _cachedConfigObj = null;
     _lastConfigString = '';
+
+    // Cached signatures (Fix #3: Cache JSON.stringify results)
+    _cachedDataSignature = null;
+    _cachedUiSignature = null;
+    _lastSignatureInputs = {
+        recordId: null,
+        soqlQuery: null,
+        displayFields: null,
+        relatedListName: null,
+        relationshipField: null,
+        enabledFields: null,
+        detectedObjectType: null,
+        relatedListType: null,
+        numberOfSlots: null,
+        iconType: null,
+        relatedListIcon: null,
+        fieldNames: null
+    };
     
     // ===== UTILITY METHODS FOR DEBUGGING =====
     
@@ -292,59 +310,110 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     
     get dataSignature() {
         this._perfMetrics.dataSignatureAccessCount++;
-        // Create signature for data-affecting properties based on mode
-        if (this.isArticlesType) {
-            return JSON.stringify({
-                mode: 'articles',
-                recordId: this.currentRecordId
-            });
-        } else if (this.isFilesType) {
-            return JSON.stringify({
-                mode: 'files',
-                recordId: this.currentRecordId
-            });
-        } else if (this.useCustomQuery) {
-            // SOQL mode signature
-            return JSON.stringify({
-                mode: 'soql',
-                recordId: this.currentRecordId,
-                soqlQuery: this.soqlQuery,
-                displayFields: this.displayFields
-            });
-        } else {
-            // ARL mode signature
-            return JSON.stringify({
-                mode: 'arl',
-                recordId: this.currentRecordId,
-                relatedListName: this.relatedListName,
-                relationshipField: this.relationshipField,
-                enabledFields: this.enabledFields,
-                detectedObjectType: this.detectedObjectType
-            });
+
+        // Fix #3: Only regenerate signature if relevant properties changed
+        const currentInputs = {
+            recordId: this.currentRecordId,
+            soqlQuery: this.soqlQuery,
+            displayFields: this.displayFields,
+            relatedListName: this.relatedListName,
+            relationshipField: this.relationshipField,
+            enabledFields: this.enabledFields,
+            detectedObjectType: this.detectedObjectType,
+            relatedListType: this.relatedListType
+        };
+
+        // Check if any relevant input changed
+        const hasChanged = Object.keys(currentInputs).some(
+            key => currentInputs[key] !== this._lastSignatureInputs[key]
+        );
+
+        if (hasChanged || !this._cachedDataSignature) {
+            // Update cache
+            Object.assign(this._lastSignatureInputs, currentInputs);
+
+            // Create signature for data-affecting properties based on mode
+            if (this.isArticlesType) {
+                this._cachedDataSignature = JSON.stringify({
+                    mode: 'articles',
+                    recordId: this.currentRecordId
+                });
+            } else if (this.isFilesType) {
+                this._cachedDataSignature = JSON.stringify({
+                    mode: 'files',
+                    recordId: this.currentRecordId
+                });
+            } else if (this.useCustomQuery) {
+                // SOQL mode signature
+                this._cachedDataSignature = JSON.stringify({
+                    mode: 'soql',
+                    recordId: this.currentRecordId,
+                    soqlQuery: this.soqlQuery,
+                    displayFields: this.displayFields
+                });
+            } else {
+                // ARL mode signature
+                this._cachedDataSignature = JSON.stringify({
+                    mode: 'arl',
+                    recordId: this.currentRecordId,
+                    relatedListName: this.relatedListName,
+                    relationshipField: this.relationshipField,
+                    enabledFields: this.enabledFields,
+                    detectedObjectType: this.detectedObjectType
+                });
+            }
         }
+
+        return this._cachedDataSignature;
     }
     
     get uiSignature() {
         this._perfMetrics.uiSignatureAccessCount++;
-        return JSON.stringify({
+
+        // Fix #3: Only regenerate signature if UI properties changed
+        const currentUiInputs = {
             numberOfSlots: this.numberOfSlots,
             iconType: this.iconType,
             relatedListIcon: this.relatedListIcon,
-            relatedListLabel: this.relatedListLabel,
-            showViewMore: this.showViewMore,
-            showViewAll: this.showViewAll,
-            viewAllUrl: this.viewAllUrl,
-            enableRecordLinking: this.enableRecordLinking,
-            recordPageUrl: this.recordPageUrl,
             fieldNames: this.fieldNames,
             defaultColumnWidth: this.defaultColumnWidth,
             hideCheckboxColumn: this.hideCheckboxColumn,
             showRowNumberColumn: this.showRowNumberColumn,
             resizeColumnDisabled: this.resizeColumnDisabled,
-            columnSortingDisabled: this.columnSortingDisabled, 
-            enableInfiniteLoading: this.enableInfiniteLoading,
-            displayMode: this.displayMode,
-        });
+            columnSortingDisabled: this.columnSortingDisabled
+        };
+
+        // Check if any UI input changed
+        const hasChanged = Object.keys(currentUiInputs).some(
+            key => currentUiInputs[key] !== this._lastSignatureInputs[key]
+        );
+
+        if (hasChanged || !this._cachedUiSignature) {
+            // Update cache
+            Object.assign(this._lastSignatureInputs, currentUiInputs);
+
+            this._cachedUiSignature = JSON.stringify({
+                numberOfSlots: this.numberOfSlots,
+                iconType: this.iconType,
+                relatedListIcon: this.relatedListIcon,
+                relatedListLabel: this.relatedListLabel,
+                showViewMore: this.showViewMore,
+                showViewAll: this.showViewAll,
+                viewAllUrl: this.viewAllUrl,
+                enableRecordLinking: this.enableRecordLinking,
+                recordPageUrl: this.recordPageUrl,
+                fieldNames: this.fieldNames,
+                defaultColumnWidth: this.defaultColumnWidth,
+                hideCheckboxColumn: this.hideCheckboxColumn,
+                showRowNumberColumn: this.showRowNumberColumn,
+                resizeColumnDisabled: this.resizeColumnDisabled,
+                columnSortingDisabled: this.columnSortingDisabled,
+                enableInfiniteLoading: this.enableInfiniteLoading,
+                displayMode: this.displayMode,
+            });
+        }
+
+        return this._cachedUiSignature;
     }
     
     get shouldReloadData() {
@@ -1447,6 +1516,10 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         this._perfMetrics.dataSignatureAccessCount = 0;
         this._perfMetrics.uiSignatureAccessCount = 0;
 
+        // Invalidate signature caches to force fresh comparison
+        this._cachedDataSignature = null;
+        this._cachedUiSignature = null;
+
         this.loadData().finally(() => {
             this.isRefreshing = false;
             // Log performance metrics after refresh completes
@@ -1460,6 +1533,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         console.log(`\n========== PERFORMANCE METRICS ${label} ==========`);
         console.log(`✓ FIX #1 APPLIED: Cached configObj (JSON.parse only on change)`);
         console.log(`✓ FIX #2 APPLIED: Removed @track from 14 primitives`);
+        console.log(`✓ FIX #3 APPLIED: Cached dataSignature & uiSignature (JSON.stringify only on change)`);
         console.log(`configObj accesses: ${this._perfMetrics.configObjAccessCount}`);
         console.log(`dataSignature accesses: ${this._perfMetrics.dataSignatureAccessCount}`);
         console.log(`uiSignature accesses: ${this._perfMetrics.uiSignatureAccessCount}`);
