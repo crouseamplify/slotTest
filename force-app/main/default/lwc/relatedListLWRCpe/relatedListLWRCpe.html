@@ -29,6 +29,17 @@
         <!-- ===== GENERAL TAB ===== -->
         <lightning-tab label="General">
             
+            <lightning-input 
+                type={propInputs.relatedListLabel.type}
+                label={propInputs.relatedListLabel.label}
+                value={propInputs.relatedListLabel.value}
+                onblur={handleRelatedListLabelChange}
+                data-key={propInputs.relatedListLabel.key}
+                field-level-help={propInputs.relatedListLabel.help}
+                required={propInputs.relatedListLabel.required}
+                class={propInputs.relatedListLabel.classes}>
+            </lightning-input>
+
             <lightning-select
                 name={propInputs.numberOfSlots.key}
                 label={propInputs.numberOfSlots.label}
@@ -67,18 +78,6 @@
                     class={propInputs.relatedListIcon.classes}>
                 </lightning-input>
             </template>
-
-            <lightning-input 
-                type={propInputs.relatedListLabel.type}
-                label={propInputs.relatedListLabel.label}
-                value={propInputs.relatedListLabel.value}
-                onblur={handleRelatedListLabelChange}
-                data-key={propInputs.relatedListLabel.key}
-                field-level-help={propInputs.relatedListLabel.help}
-                required={propInputs.relatedListLabel.required}
-                class={propInputs.relatedListLabel.classes}>
-            </lightning-input>
-
 
             <!-- Record Linking Section - Hidden for Files type -->
             <template if:true={showRecordLinkingSettings}>
@@ -129,7 +128,7 @@
 
         <!-- ===== TABLE SETTINGS TAB (for Standard and Articles) ===== -->
 <template if:true={showTableSettings}>
-    <lightning-tab label="Table Settings">
+    <lightning-tab label="List Settings">
         
         <!-- Data Source Selection - ONLY for Standard -->
         <template if:true={isStandardType}>
@@ -372,26 +371,25 @@
         <template if:true={showFilesSettings}>
             <lightning-tab label="Files Settings">
                 
-                <!-- Display Mode Selection -->
-                <div class="slds-m-bottom_large">
-                    <h3 class="slds-text-heading_small slds-m-bottom_small">Display Mode</h3>
-                    
-                    <lightning-select
-                        name={propInputs.displayModeFiles.key}
-                        label={propInputs.displayModeFiles.label}
-                        value={propInputs.displayModeFiles.value}
-                        options={propInputs.displayModeFiles.options}
-                        onchange={handleDisplayModeFilesChange}
-                        required={propInputs.displayModeFiles.required}
-                        data-key={propInputs.displayModeFiles.key}
-                        field-level-help={propInputs.displayModeFiles.help}
-                        class={propInputs.displayModeFiles.classes}>
-                    </lightning-select>
-                </div>
-                
                 <!-- Display Settings -->
                 <div class="slds-m-bottom_large">
                     <h3 class="slds-text-heading_small slds-m-bottom_small">Display Settings</h3>
+                    
+                    <div class="slds-text-body_small slds-m-bottom_medium slds-text-color_weak">
+                        Files are displayed in a responsive grid layout with preview and download capabilities.
+                    </div>
+
+                    <lightning-select
+                        name={propInputs.filesGridColumns.key}
+                        label={propInputs.filesGridColumns.label}
+                        value={propInputs.filesGridColumns.value}
+                        options={propInputs.filesGridColumns.options}
+                        onchange={handleFilesGridColumnsChange}
+                        required={propInputs.filesGridColumns.required}
+                        data-key={propInputs.filesGridColumns.key}
+                        field-level-help={propInputs.filesGridColumns.help}
+                        class={propInputs.filesGridColumns.classes}>
+                    </lightning-select>
 
                     <lightning-input 
                         type={propInputs.initialRecordsToLoad.type}

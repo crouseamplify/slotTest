@@ -56,25 +56,25 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     
     debugLog(message, ...args) {
         if (this.showDebugInfo) {
-            console.log(`[SlotTest Debug] ${message}`, ...args);
+            //console.log(`[SlotTest Debug] ${message}`, ...args);
         }
     }
     
     debugWarn(message, ...args) {
         if (this.showDebugInfo) {
-            console.warn(`[SlotTest Debug] ${message}`, ...args);
+            //console.warn(`[SlotTest Debug] ${message}`, ...args);
         }
     }
     
     debugError(message, ...args) {
         if (this.showDebugInfo) {
-            console.error(`[SlotTest Debug] ${message}`, ...args);
+            //console.error(`[SlotTest Debug] ${message}`, ...args);
         }
     }
     
     // Always log errors regardless of debug mode
     logError(message, ...args) {
-        console.error(`[SlotTest Error] ${message}`, ...args);
+        //console.error(`[SlotTest Error] ${message}`, ...args);
     }
     
     // ===== COMPUTED CONFIGURATION PROPERTIES =====
@@ -366,7 +366,10 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
     
     get showActionButtonContainer() {
-        return this.showViewMore || this.showViewAll;
+        // Only show if there's actually something to display
+        const hasLoadMore = this.showLoadMoreButton && this.hasMoreRecords;
+        const hasViewAll = this.showViewAll;
+        return hasLoadMore || hasViewAll;
     }
     
     get actionButtonContainerClass() {
@@ -385,15 +388,9 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         return this.configObj.displayMode || 'table';
     }
 
-    get displayModeFiles() {
-        return this.configObj.displayModeFiles || 'cards';
-    }
-
-
     get showTable() {
         return ((this.displayMode === 'table' && this.isStandardType) || 
-                (this.displayModeFiles === 'table' && this.isFilesType) ||
-                this.isArticlesType) &&
+                this.isArticlesType) &&  // Removed Files reference
             !this.isLoading && 
             !this.error && 
             this.hasData && 
@@ -454,7 +451,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
 
     get showLoadMoreButton() {
-        const hasContent = this.showTable || this.showArticles;
+        const hasContent = this.showTable || this.showArticles || this.showFilesGrid;
         return hasContent && this.hasMoreRecords && this.showViewMore;
     }
     
@@ -478,7 +475,12 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
 
     get tableContainerClass() {
-        return 'responsive-table-container fixed-header-table';
+        // Only use fixed-header-table for cards view
+        // Standard table display uses regular responsive container
+        if (this.showCards) {
+            return 'responsive-table-container fixed-header-table';
+        }
+        return 'responsive-table-container';
     }
     
     // Validation
@@ -533,11 +535,18 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     
     get showFilesGrid() {
         return this.isFilesType && 
-            this.displayModeFiles === 'cards' &&
             !this.isLoading && 
             !this.error && 
             this.hasData && 
             this.displayedRecords.length > 0;
+    }
+
+    get filesGridColumns() {
+        return this.configObj.filesGridColumns || '2';
+    }
+
+    get filesGridClass() {
+        return `files-grid-container files-grid-columns-${this.filesGridColumns}`;
     }
 
     get hasModalImageError() {
@@ -583,7 +592,12 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         if (!this.isInitialized) {
             return;
         }
-        
+
+        // Don't interfere with manual refresh
+        if (this.isRefreshing) {
+            return;
+        }
+
         // Smart change detection - only reload what's necessary
         if (this.shouldReloadData) {
             this.debugLog('Data signature changed, reloading data');
@@ -635,39 +649,39 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     async loadData() {
         // Debug configuration first
         this.debugConfiguration();
-        
+
         if (!this.hasValidConfiguration) {
             this.debugLog(`Invalid configuration, skipping data load`);
             this.clearData();
             return;
         }
-        
+
         const startTime = performance.now();
         this.debugLog(`Loading data for type: ${this.relatedListType}`);
-        
+
         this.isLoading = true;
         this.error = null;
-        
+
         try {
             // Route to appropriate data loading method based on type
             if (this.isArticlesType) {
                 await this.loadArticles();
             } else if (this.isFilesType) {
-                await this.loadFiles(); // ADD THIS
+                await this.loadFiles();
             } else if (this.useCustomQuery) {
                 await this.loadDataWithSOQL();
             } else {
                 await this.loadDataWithARL();
             }
-            
+
             // Update signatures to prevent unnecessary reloads
             this.lastDataSignature = this.dataSignature;
             this.lastUISignature = this.uiSignature;
-            
+
             const endTime = performance.now();
             this.lastLoadTime = Math.round(endTime - startTime);
             this.debugLog(`Data loading took ${this.lastLoadTime}ms`);
-            
+
         } catch (error) {
             this.logError(`Error loading data:`, error);
             this.error = error.body?.message || error.message || 'Unknown error occurred';
@@ -1382,8 +1396,19 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     
     handleRefresh() {
         this.debugLog(`Refresh clicked - Mode: ${this.dataSourceMode}`);
+
+        // Set a flag to prevent renderedCallback from interfering
+        this.isRefreshing = true;
+
         this.clearData();
-        this.loadData();
+
+        // Force reload by resetting signatures
+        this.lastDataSignature = '';
+        this.lastUISignature = '';
+
+        this.loadData().finally(() => {
+            this.isRefreshing = false;
+        });
     }
     
     handleViewMore() {

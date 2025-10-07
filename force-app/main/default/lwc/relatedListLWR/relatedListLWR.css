@@ -1,4 +1,8 @@
-/* Component container with border and proper spacing */
+/* ============================================
+   BASE COMPONENT STRUCTURE
+   ============================================ */
+
+/* Main container with border and shadow */
 .component-container {
     background-color: var(--dxp-c-record-list-table-body-background-color, white);
     border: var(--dxp-c-record-list-header-border-width, 1px) solid var(--dxp-c-record-list-header-border-color, #E5E5E5);
@@ -8,7 +12,17 @@
     overflow: hidden;
 }
 
-/* Header section with gray background */
+/* Content area - no default padding */
+.content-area {
+    padding: 0;
+}
+
+
+/* ============================================
+   HEADER SECTION
+   ============================================ */
+
+/* Header with gray background */
 .header-section {
     background-color: rgb(242, 242, 242);
     margin: 0;
@@ -20,7 +34,7 @@
 
 .header-section > .slds-grid {
     width: 100%;
-    padding: 0 1rem;
+    padding: 0 .5rem;
 }
 
 /* Header title using site base font */
@@ -31,10 +45,26 @@
     padding: 0;
 }
 
-/* Content area - no default padding */
-.content-area {
-    padding: 0;
+/* Header slot layout */
+.header-slots-row {
+    display: flex;
+    flex: 1 1 100%;
+    width: 100%;
+    justify-content: flex-end;
 }
+
+.header-slots-row .slds-grid {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    justify-items: end;
+    width: auto;
+}
+
+
+/* ============================================
+   DATATABLE
+   ============================================ */
 
 /* Responsive datatable container */
 .responsive-table-container {
@@ -60,164 +90,31 @@
     background: transparent !important;
 }
 
-/* Loading state */
-.loading-container {
-    text-align: center;
-    padding: 1rem;
-}
-
-/* Error container */
-.error-container {
-    border-left: 4px solid #c23934;
-    padding: 1rem;
-    background-color: #fef7f7;
-    margin: 1rem;
-}
-
-/* No data container */
-.no-data-container {
-    text-align: center;
-    padding: 1.5rem;
-}
-
-/* Debug section styling */
-.debug-section {
-    background-color: #f3f3f3;
-    border: 1px solid #d8dde6;
-    border-radius: 4px;
-    padding: 1rem;
-    margin: 1rem;
-}
-
-.related-list-details {
-    background-color: #fafaf9;
-    border-left: 4px solid #0176d3;
-    padding: 1rem;
-    margin: 1rem;
-}
-
-.debug-code {
-    font-family: 'Courier New', monospace;
-    background-color: #f4f6f9;
-    padding: 0.25rem 0.5rem;
-    border-radius: 3px;
-    font-size: 0.875rem;
-}
-
-.button-info {
-    margin-bottom: 0.5rem;
-    padding: 0.5rem;
-    background-color: #ffffff;
-    border: 1px solid #d8dde6;
-    border-radius: 4px;
-}
-
-.related-list-item {
-    border-bottom: 1px solid #e5e5e5;
-    padding: 0.75rem 0;
-}
-
-.related-list-item:last-child {
-    border-bottom: none;
-}
-
-.input-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-@media (max-width: 768px) {
-    .input-row {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Mode indicator styling for debug badges */
-.mode-indicator {
-    display: inline-block;
-    padding: 0.2rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05rem;
-}
-
-.mode-indicator--arl {
-    background-color: #e8f4fd;
+/* Style file name buttons to look like links */
+.slds-table tbody lightning-button-icon,
+.slds-table tbody button[name="viewFile"] {
     color: #0176d3;
-    border: 1px solid #c9dbea;
+    text-decoration: none;
+    font-weight: normal;
+    background: transparent;
+    border: none;
+    padding: 0;
+    text-align: left;
 }
 
-.mode-indicator--soql {
-    background-color: #fef7e0;
-    color: #b45500;
-    border: 1px solid #ddbd4a;
+.slds-table tbody button[name="viewFile"]:hover {
+    color: #014486;
+    text-decoration: underline;
 }
 
-/* Configuration status styling */
-.config-status {
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
-    margin: 0.5rem 0;
-}
 
-.config-status--valid {
-    background-color: #f3f9f4;
-    color: #4bca81;
-    border: 1px solid #4bca81;
-}
+/* ============================================
+   FIXED HEADER TABLE WITH SCROLLING
+   ============================================ */
 
-.config-status--invalid {
-    background-color: #fef7f7;
-    color: #ea001e;
-    border: 1px solid #ea001e;
-}
-
-.config-status--warning {
-    background-color: #fef8f2;
-    color: #ffb75d;
-    border: 1px solid #ffb75d;
-}
-
-/* Header slot layout */
-.header-slots-row {
-    display: flex;
-    flex: 1 1 100%;
-    width: 100%;
-    justify-content: flex-end;
-}
-
-.header-slots-row .slds-grid {
-    display: grid !important;
-    grid-template-columns: 1fr;
-    gap: 0.25rem;
-    justify-items: end;
-    width: auto;
-}
-
-@media (min-width: 1400px) {
-    .header-slots-row {
-        flex: 0 1 auto;
-        width: auto;
-        margin-left: 1rem;
-    }
-
-    .header-slots-row .slds-grid {
-        grid-template-columns: repeat(4, auto) !important;
-        justify-items: center;
-    }
-}
-
-/* Fixed header table with scrolling */
 .fixed-header-table {
     height: 200px;
     overflow: hidden;
-    border: 1px solid #e5e5e5;
-    border-radius: 0.25rem;
 }
 
 .fixed-header-table lightning-datatable {
@@ -231,6 +128,7 @@
 }
 
 .fixed-header-table lightning-datatable table thead {
+    position: -webkit-sticky;
     position: sticky !important;
     top: 0 !important;
     z-index: 10 !important;
@@ -257,7 +155,11 @@
     background-color: #f4f6f9 !important;
 }
 
-/* Card layout - single column */
+
+/* ============================================
+   CARD LAYOUT (SINGLE COLUMN)
+   ============================================ */
+
 .fixed-header-table .card-container {
     display: flex;
     flex-direction: column;
@@ -302,7 +204,11 @@
     word-break: break-word;
 }
 
-/* Action Footer - Native Related List Style */
+
+/* ============================================
+   ACTION FOOTER
+   ============================================ */
+
 .action-footer {
     display: flex;
     align-items: center;
@@ -319,16 +225,42 @@
     margin: 0 0.5rem;
 }
 
+
 /* ===== FILES GRID STYLES ===== */
 
 /* Files grid container with scrolling */
 .files-grid-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
     padding: 0.75rem 1rem;
     overflow-y: auto;
     max-height: 200px;
+}
+
+/* Responsive column layouts */
+.files-grid-columns-1 {
+    grid-template-columns: 1fr;
+}
+
+.files-grid-columns-2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.files-grid-columns-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.files-grid-columns-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* Mobile responsive - always single column */
+@media (max-width: 768px) {
+    .files-grid-columns-2,
+    .files-grid-columns-3,
+    .files-grid-columns-4 {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Individual file items */
@@ -343,6 +275,8 @@
     position: relative;
     cursor: pointer;
     transition: box-shadow 0.1s ease;
+    animation: fadeInFile 0.3s ease-out;
+    min-height: 72px; /* Ensure consistent minimum height */
 }
 
 .file-item:hover {
@@ -358,13 +292,34 @@
     cursor: pointer;
     background-color: #ffffff;
     position: relative;
+    display: flex;
+    align-items: center; /* Vertically center content */
+    min-height: 72px; /* Match parent min-height */
+    height: 100%;
 }
 
 .file-item:hover .slds-box_x-small {
     background-color: #f3f3f3;
 }
 
-/* File hover overlay */
+/* Ensure the grid inside the box also centers vertically */
+.file-item .slds-box_x-small .slds-grid {
+    align-items: center;
+    height: 100%;
+}
+
+/* File title with max 2 lines and ellipsis */
+.file-item .slds-truncate {
+    white-space: normal !important;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.3;
+    max-height: 2.6em; /* 2 lines */
+}
+
+/* File hover overlay with blur effect - now covers entire card */
 .file-hover-overlay {
     position: absolute;
     top: 0;
@@ -373,7 +328,8 @@
     bottom: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -381,26 +337,19 @@
     transition: opacity 0.2s ease;
     border-radius: 0.25rem;
     z-index: 10;
-    backdrop-filter: blur(2px);
+    background-color: rgba(255, 255, 255, 0.3); /* Slight white overlay to ensure blur visibility */
 }
 
 .file-item:hover .file-hover-overlay {
     opacity: 1;
 }
 
+/* Icon styling - smaller and consistent size */
 .file-hover-overlay lightning-icon {
-    transform: scale(1.5);
-    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
-}
-
-/* Force white color for overlay icon */
-.file-hover-overlay lightning-icon svg {
-    fill: #ffffff !important;
-}
-
-.file-hover-overlay lightning-icon svg path {
-    fill: #ffffff !important;
-    stroke: #ffffff !important;
+    --slds-c-icon-color-foreground: #0176d3;
+    --slds-c-icon-color-foreground-default: #0176d3;
+    transform: scale(1.3); /* Reduced from 1.8 */
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
 }
 
 /* Animation for file items */
@@ -415,11 +364,10 @@
     }
 }
 
-.file-item {
-    animation: fadeInFile 0.3s ease-out;
-}
 
-/* ===== IMAGE MODAL STYLES ===== */
+/* ============================================
+   IMAGE MODAL
+   ============================================ */
 
 .slds-modal {
     z-index: 9001;
@@ -473,13 +421,167 @@
     min-height: 40vh;
 }
 
-/* ===== MOBILE RESPONSIVE ===== */
 
+/* ============================================
+   STATE CONTAINERS
+   ============================================ */
+
+/* Loading state */
+.loading-container {
+    text-align: center;
+    padding: 1rem;
+}
+
+/* Error container */
+.error-container {
+    border-left: 4px solid #c23934;
+    padding: 1rem;
+    background-color: #fef7f7;
+    margin: 1rem;
+}
+
+/* No data container */
+.no-data-container {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+
+/* ============================================
+   DEBUG & CONFIGURATION DISPLAY
+   ============================================ */
+
+/* Debug section styling */
+.debug-section {
+    background-color: #f3f3f3;
+    border: 1px solid #d8dde6;
+    border-radius: 4px;
+    padding: 1rem;
+    margin: 1rem;
+}
+
+.related-list-details {
+    background-color: #fafaf9;
+    border-left: 4px solid #0176d3;
+    padding: 1rem;
+    margin: 1rem;
+}
+
+.debug-code {
+    font-family: 'Courier New', monospace;
+    background-color: #f4f6f9;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.875rem;
+}
+
+.button-info {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background-color: #ffffff;
+    border: 1px solid #d8dde6;
+    border-radius: 4px;
+}
+
+.related-list-item {
+    border-bottom: 1px solid #e5e5e5;
+    padding: 0.75rem 0;
+}
+
+.related-list-item:last-child {
+    border-bottom: none;
+}
+
+.input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Mode indicator styling for debug badges */
+.mode-indicator {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+}
+
+.mode-indicator--arl {
+    background-color: #e8f4fd;
+    color: #0176d3;
+    border: 1px solid #c9dbea;
+}
+
+.mode-indicator--soql {
+    background-color: #fef7e0;
+    color: #b45500;
+    border: 1px solid #ddbd4a;
+}
+
+/* Configuration status styling */
+.config-status {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    margin: 0.5rem 0;
+}
+
+.config-status--valid {
+    background-color: #f3f9f4;
+    color: #4bca81;
+    border: 1px solid #4bca81;
+}
+
+.config-status--invalid {
+    background-color: #fef7f7;
+    color: #ea001e;
+    border: 1px solid #ea001e;
+}
+
+.config-status--warning {
+    background-color: #fef8f2;
+    color: #ffb75d;
+    border: 1px solid #ffb75d;
+}
+
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Desktop - Large screens (1400px+) */
+@media (min-width: 1400px) {
+    .header-slots-row {
+        flex: 0 1 auto;
+        width: auto;
+        margin-left: 1rem;
+    }
+
+    .header-slots-row .slds-grid {
+        grid-template-columns: repeat(4, auto) !important;
+        justify-items: center;
+    }
+}
+
+/* Tablet & Mobile (768px and below) */
 @media (max-width: 768px) {
-    .files-grid-container {
+    /* Debug input rows - stack vertically */
+    .input-row {
         grid-template-columns: 1fr;
     }
     
+    /* Files grid - always single column on mobile */
+    .files-grid-columns-2,
+    .files-grid-columns-3,
+    .files-grid-columns-4 {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Modal adjustments */
     .slds-modal_large .slds-modal__container {
         width: 95%;
         margin: 1rem;

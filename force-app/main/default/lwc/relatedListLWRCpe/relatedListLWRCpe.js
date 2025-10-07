@@ -26,23 +26,34 @@ export default class SlotTestCpe extends LightningElement {
             key: 'relatedListType',
             label: 'Related List Type',
             type: 'select',
-            help: 'Choose the type of related list to display. Standard uses SOQL or Related List API. Files displays attached files. Knowledge Articles shows linked articles.',
+            help: 'Choose the type of related list to display. Standard uses SOQL or Related List API. Files displays attached files. Case Articles shows Knowledge Articles linked to the Case.',
             required: false,
             valuePath: 'relatedListType',
             value: 'standard',
             doSetDefaultValue: true,
             classes: defaultCSSClasses,
             options: [
-                { label: 'Standard', value: 'standard' },
-                { label: 'Files', value: 'files' },
-                { label: 'Knowledge Articles', value: 'articles' }
+                { label: 'Related List', value: 'standard' },
+                { label: 'Related Files', value: 'files' },
+                { label: 'Related Case Articles', value: 'articles' }
             ]
+        },
+        relatedListLabel: {
+            key: 'relatedListLabel',
+            label: 'Related List Label',
+            type: 'text',
+            help: 'Display name for the related list header (e.g., \'My Assignments\', \'Open Cases\'). This appears in the component header.',
+            required: false,
+            valuePath: 'relatedListLabel',
+            value: 'Related Records',
+            doSetDefaultValue: true,
+            classes: defaultCSSClasses
         },
         numberOfSlots: {
             key: 'numberOfSlots',
-            label: 'Number of Action Slots',
+            label: 'Button Slots',
             type: 'select',
-            help: 'How many slots do you need in the component header?',
+            help: 'How many Button Slots do you want to add? You can add up to four.',
             required: false,
             valuePath: 'numberOfSlots',
             value: 'None',
@@ -68,7 +79,7 @@ export default class SlotTestCpe extends LightningElement {
             classes: defaultCSSClasses,
             options: [
                 { label: 'SLDS Icon', value: 'slds' },
-                { label: 'Slot', value: 'slot' }
+                { label: 'Custom Icon', value: 'slot' }
             ]
         },
         relatedListIcon: {
@@ -82,17 +93,7 @@ export default class SlotTestCpe extends LightningElement {
             doSetDefaultValue: true,
             classes: defaultCSSClasses
         },
-        relatedListLabel: {
-            key: 'relatedListLabel',
-            label: 'Related List Label',
-            type: 'text',
-            help: 'Display name for the related list header (e.g., \'My Assignments\', \'Open Cases\'). This appears in the component header.',
-            required: false,
-            valuePath: 'relatedListLabel',
-            value: 'Related Records',
-            doSetDefaultValue: true,
-            classes: defaultCSSClasses
-        },
+
         showViewMore: {
             key: 'showViewMore',
             label: 'Show View More Button',
@@ -141,7 +142,7 @@ export default class SlotTestCpe extends LightningElement {
             key: 'relatedListName',
             label: 'Related List Name',
             type: 'text',
-            help: 'The API name of the related list (e.g., \'Contacts\', \'Opportunities\', \'Cases\'). Used in Related List API mode.',
+            help: 'Enter the name of the Related List. It is usually the same name you see on the Related List in the Salesforce Page Layout. Used in Related List API mode.',
             required: false,
             valuePath: 'relatedListName',
             value: '',
@@ -161,7 +162,7 @@ export default class SlotTestCpe extends LightningElement {
         },
         enabledFields: {
             key: 'enabledFields',
-            label: 'Enabled Fields (Optional)',
+            label: 'Included Fields (Optional)',
             type: 'text',
             help: 'Comma-separated field names to display (e.g., \'Name,Email,Phone\'). Leave blank for default fields.',
             required: false,
@@ -250,7 +251,7 @@ export default class SlotTestCpe extends LightningElement {
         },
         showRowNumberColumn: {
             key: 'showRowNumberColumn',
-            label: 'Show Row Number Column',
+            label: 'Show Row Numbers',
             type: 'checkbox',
             help: 'Show row numbers in the data table',
             required: false,
@@ -314,23 +315,25 @@ export default class SlotTestCpe extends LightningElement {
             doSetDefaultValue: true,
             classes: defaultCSSClasses,
             options: [
-                { label: 'Table', value: 'table' },
+                { label: 'List', value: 'table' },
                 { label: 'Cards', value: 'cards' }
             ]
         },
-        displayModeFiles: {
-            key: 'displayModeFiles',
-            label: 'Display Mode',
+        filesGridColumns: {
+            key: 'filesGridColumns',
+            label: 'Grid Columns',
             type: 'select',
-            help: 'Choose how to display files. Grid shows files in a 2-column card layout. Table displays files in a sortable list.',
+            help: 'Number of columns to display in the files grid.',
             required: false,
-            valuePath: 'displayModeFiles',
-            value: 'cards',
+            valuePath: 'filesGridColumns',
+            value: '2',
             doSetDefaultValue: true,
             classes: defaultCSSClasses,
             options: [
-                { label: 'Grid', value: 'cards' },
-                { label: 'Table', value: 'table' }
+                { label: '1 Column', value: '1' },
+                { label: '2 Columns', value: '2' },
+                { label: '3 Columns', value: '3' },
+                { label: '4 Columns', value: '4' }
             ]
         }
     };
@@ -395,7 +398,7 @@ export default class SlotTestCpe extends LightningElement {
         try {
             valuetmp = JSON.parse(value);
         } catch (e) {
-            console.error('Invalid JSON in CPE value:', value);
+            //console.error('Invalid JSON in CPE value:', value);
             valuetmp = {};
         }
 
@@ -515,7 +518,7 @@ export default class SlotTestCpe extends LightningElement {
             
             return fields;
         } catch (e) {
-            console.error('Error parsing SOQL:', e);
+            //console.error('Error parsing SOQL:', e);
             return [];
         }
     }
@@ -535,7 +538,7 @@ export default class SlotTestCpe extends LightningElement {
                     {detail: {value: this._value}}));
             }
         } catch (error) {
-            console.error('Error in handleRecordIdChange:', error);
+            //console.error('Error in handleRecordIdChange:', error);
         }
     }
 
@@ -548,7 +551,7 @@ export default class SlotTestCpe extends LightningElement {
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
-            console.error('Error in handleRelatedListTypeChange:', error);
+            //console.error('Error in handleRelatedListTypeChange:', error);
         }
     }
 
@@ -561,7 +564,7 @@ export default class SlotTestCpe extends LightningElement {
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
-            console.error('Error in handleNumberOfSlotsChange:', error);
+            //console.error('Error in handleNumberOfSlotsChange:', error);
         }
     }
 
@@ -578,7 +581,7 @@ export default class SlotTestCpe extends LightningElement {
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
-            console.error('Error in handleIconTypeChange:', error);
+            //console.error('Error in handleIconTypeChange:', error);
         }
     }
 
@@ -597,7 +600,7 @@ export default class SlotTestCpe extends LightningElement {
                     {detail: {value: this._value}}));
             }
         } catch (error) {
-            console.error('Error in handleRelatedListIconChange:', error);
+            //console.error('Error in handleRelatedListIconChange:', error);
         }
     }
 
@@ -616,7 +619,7 @@ export default class SlotTestCpe extends LightningElement {
                     {detail: {value: this._value}}));
             }
         } catch (error) {
-            console.error('Error in handleRelatedListLabelChange:', error);
+            //console.error('Error in handleRelatedListLabelChange:', error);
         }
     }
 
@@ -629,20 +632,20 @@ export default class SlotTestCpe extends LightningElement {
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
-            console.error('Error in handleDisplayModeChange:', error);
+            //console.error('Error in handleDisplayModeChange:', error);
         }
     }
 
-    handleDisplayModeFilesChange(e) {
+    handleFilesGridColumnsChange(e) {
         try {
             const newValue = this.getEventValue(e, false);
-            this.propInputs.displayModeFiles.value = newValue;
+            this.propInputs.filesGridColumns.value = newValue;
             let tmpvalueObj = this.getValueObj();
-            tmpvalueObj.displayModeFiles = this.propInputs.displayModeFiles.value;
+            tmpvalueObj.filesGridColumns = this.propInputs.filesGridColumns.value;
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
-            console.error('Error in handleDisplayModeFilesChange:', error);
+            //console.error('Error in handleFilesGridColumnsChange:', error);
         }
     }
 
@@ -655,7 +658,7 @@ export default class SlotTestCpe extends LightningElement {
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
-            console.error('Error in handleShowViewMoreChange:', error);
+            //console.error('Error in handleShowViewMoreChange:', error);
         }
     }
 
@@ -668,7 +671,7 @@ export default class SlotTestCpe extends LightningElement {
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
-            console.error('Error in handleShowViewAllChange:', error);
+            //console.error('Error in handleShowViewAllChange:', error);
         }
     }
 
@@ -687,7 +690,7 @@ export default class SlotTestCpe extends LightningElement {
                     {detail: {value: this._value}}));
             }
         } catch (error) {
-            console.error('Error in handleViewAllUrlChange:', error);
+            //console.error('Error in handleViewAllUrlChange:', error);
         }
     }
 
@@ -700,7 +703,7 @@ export default class SlotTestCpe extends LightningElement {
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
-            console.error('Error in handleUseCustomQueryChange:', error);
+            //console.error('Error in handleUseCustomQueryChange:', error);
         }
     }
 
@@ -719,7 +722,7 @@ export default class SlotTestCpe extends LightningElement {
                     {detail: {value: this._value}}));
             }
         } catch (error) {
-            console.error('Error in handleRelatedListNameChange:', error);
+            //console.error('Error in handleRelatedListNameChange:', error);
         }
     }
 
@@ -738,7 +741,7 @@ export default class SlotTestCpe extends LightningElement {
                     {detail: {value: this._value}}));
             }
         } catch (error) {
-            console.error('Error in handleEnabledFieldsChange:', error);
+            //console.error('Error in handleEnabledFieldsChange:', error);
         }
     }
 
@@ -757,7 +760,7 @@ export default class SlotTestCpe extends LightningElement {
                     {detail: {value: this._value}}));
             }
         } catch (error) {
-            console.error('Error in handleFieldNamesChange:', error);
+            //console.error('Error in handleFieldNamesChange:', error);
         }
     }
 
@@ -776,7 +779,7 @@ export default class SlotTestCpe extends LightningElement {
                     {detail: {value: this._value}}));
             }
         } catch (error) {
-            console.error('Error in handleRelationshipFieldChange:', error);
+            //console.error('Error in handleRelationshipFieldChange:', error);
         }
     }
 
@@ -784,7 +787,7 @@ export default class SlotTestCpe extends LightningElement {
         try {
             this.showSqlModal = true;
         } catch (error) {
-            console.error('Error in handleSoqlQueryClick:', error);
+            //console.error('Error in handleSoqlQueryClick:', error);
         }
     }
 
@@ -799,7 +802,7 @@ export default class SlotTestCpe extends LightningElement {
                 this.fieldsInitialized = false;
             }
         } catch (error) {
-            console.error('Error in handleParseFields:', error);
+            //console.error('Error in handleParseFields:', error);
         }
     }
 
@@ -807,7 +810,7 @@ export default class SlotTestCpe extends LightningElement {
         try {
             this.showSqlModal = false;
         } catch (error) {
-            console.error('Error in handleCloseSqlModal:', error);
+            //console.error('Error in handleCloseSqlModal:', error);
         }
     }
 
@@ -841,7 +844,7 @@ export default class SlotTestCpe extends LightningElement {
             
             this.handleCloseSqlModal();
         } catch (error) {
-            console.error('Error in handleSaveSoqlQuery:', error);
+            //console.error('Error in handleSaveSoqlQuery:', error);
         }
     }
 
@@ -861,7 +864,7 @@ export default class SlotTestCpe extends LightningElement {
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: this._value}}));
         } catch (error) {
-            console.error('Error in handleFieldOrderChange:', error);
+            //console.error('Error in handleFieldOrderChange:', error);
         }
     }
 
@@ -879,7 +882,7 @@ export default class SlotTestCpe extends LightningElement {
                     {detail: {value: JSON.stringify(tmpvalueObj)}}));
             }
         } catch (error) {
-            console.error('Error in handleRecordPageUrlChange:', error);
+            //console.error('Error in handleRecordPageUrlChange:', error);
         }
     }
 
@@ -897,7 +900,7 @@ export default class SlotTestCpe extends LightningElement {
                     {detail: {value: JSON.stringify(tmpvalueObj)}}));
             }
         } catch (error) {
-            console.error('Error in handleEnableRecordLinkingChange:', error);
+            //console.error('Error in handleEnableRecordLinkingChange:', error);
         }
     }
 
@@ -910,7 +913,7 @@ export default class SlotTestCpe extends LightningElement {
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
-            console.error('Error in handleInitialRecordsToLoadChange:', error);
+            //console.error('Error in handleInitialRecordsToLoadChange:', error);
         }
     }
 
@@ -930,7 +933,7 @@ export default class SlotTestCpe extends LightningElement {
                     {detail: {value: JSON.stringify(tmpvalueObj)}}));
             }
         } catch (error) {
-            console.error('Error in handleDefaultColumnWidthChange:', error);
+            //console.error('Error in handleDefaultColumnWidthChange:', error);
         }
     }
 
@@ -943,7 +946,7 @@ export default class SlotTestCpe extends LightningElement {
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
-            console.error('Error in handleShowRowNumberColumnChange:', error);
+            //console.error('Error in handleShowRowNumberColumnChange:', error);
         }
     }
 
@@ -956,7 +959,7 @@ export default class SlotTestCpe extends LightningElement {
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
-            console.error('Error in handleResizeColumnDisabledChange:', error);
+            //console.error('Error in handleResizeColumnDisabledChange:', error);
         }
     }
 
@@ -969,7 +972,7 @@ export default class SlotTestCpe extends LightningElement {
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
-            console.error('Error in handleColumnSortingDisabledChange:', error);
+            //console.error('Error in handleColumnSortingDisabledChange:', error);
         }
     }
 
@@ -982,7 +985,7 @@ export default class SlotTestCpe extends LightningElement {
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
-            console.error('Error in handleEnableInfiniteLoadingChange:', error);
+            //console.error('Error in handleEnableInfiniteLoadingChange:', error);
         }
     }
 
@@ -995,7 +998,7 @@ export default class SlotTestCpe extends LightningElement {
             this.dispatchEvent(new CustomEvent("valuechange", 
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
-            console.error('Error in handleShowDebugInfoChange:', error);
+            //console.error('Error in handleShowDebugInfoChange:', error);
         }
     }
 

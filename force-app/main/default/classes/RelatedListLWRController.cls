@@ -2,7 +2,7 @@ public with sharing class RelatedListLWRController {
     
     // ===== EXISTING SOQL METHODS =====
     
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled(cacheable=false)
     public static QueryResult executeQuery(String soqlQuery, String recordId) {
         QueryResult result = new QueryResult();
         result.records = new List<sObject>();
@@ -110,7 +110,7 @@ public with sharing class RelatedListLWRController {
         }
     }
     
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled(cacheable=false)
     public static RelatedListInfo getRelatedListInfo(String objectApiName, String relatedListName, String recordId, String enabledFields, String relationshipField) {
         try {
             System.debug('RelatedListLWR: Starting getRelatedListInfo with: objectApiName=' + objectApiName + ', relatedListName=' + relatedListName + ', recordId=' + recordId + ', relationshipField=' + relationshipField);
@@ -578,7 +578,7 @@ public with sharing class RelatedListLWRController {
      * @param caseId The case record ID
      * @return List of ArticleData objects representing the associated knowledge articles
      */
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled(cacheable=false)
     public static List<ArticleData> getCaseArticles(String caseId) {
         List<ArticleData> articles = new List<ArticleData>();
         

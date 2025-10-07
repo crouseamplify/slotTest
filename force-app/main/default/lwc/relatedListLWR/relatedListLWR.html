@@ -105,22 +105,26 @@
         </template>
 
         <!-- Data Table -->
-        <lightning-datatable
-            key-field="Id"
-            data={displayedRecords}
-            columns={columns}
-            hide-checkbox-column={hideCheckboxColumnValue}
-            show-row-number-column={showRowNumberColumnValue}
-            resize-column-disabled={resizeColumnDisabled}
-            sorted-by={sortedBy}
-            sorted-direction={sortDirection}
-            onsort={handleSort}
-            onrowaction={handleRowAction}
-            enable-infinite-loading={enableInfiniteLoading}
-            onloadmore={handleLoadMore}
-            is-loading={isLoadingMore}
-            class="dxp-link-text responsive-datatable">
-        </lightning-datatable>
+        <template if:true={showTable}>
+            <div class={tableContainerClass}>
+                <lightning-datatable
+                    key-field="Id"
+                    data={displayedRecords}
+                    columns={columns}
+                    hide-checkbox-column={hideCheckboxColumnValue}
+                    show-row-number-column={showRowNumberColumnValue}
+                    resize-column-disabled={resizeColumnDisabled}
+                    sorted-by={sortedBy}
+                    sorted-direction={sortDirection}
+                    onsort={handleSort}
+                    onrowaction={handleRowAction}
+                    enable-infinite-loading={enableInfiniteLoading}
+                    onloadmore={handleLoadMore}
+                    is-loading={isLoadingMore}
+                    class="dxp-link-text responsive-datatable">
+                </lightning-datatable>
+            </div>
+        </template>
 
         <!-- Card View -->
         <template if:true={showCards}>
@@ -156,7 +160,7 @@
         <!-- Files Grid View -->
             <template if:true={showFilesGrid}>
                 <div class="fixed-header-table">
-                    <div class="files-grid-container">
+                    <div class={filesGridClass}>
                         <template for:each={displayedRecords} for:item="file">
                             <div key={file.id} 
                                 class="file-item"
@@ -188,8 +192,8 @@
                                                     year="numeric"
                                                     month="short"
                                                     day="numeric">
-                                                </lightning-formatted-date-time>
-                                                • {file.formattedSize} • {file.fileExtension}
+                                                </lightning-formatted-date-time> • {file.formattedSize} • {file.fileExtension}
+
                                             </div>
                                         </div>
                                     </div>
