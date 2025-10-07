@@ -58,9 +58,12 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
 
     // Performance metrics tracking
     _perfMetrics = {
-        configObjAccessCount: 0,
-        dataSignatureAccessCount: 0,
-        uiSignatureAccessCount: 0,
+        relatedListLabelAccessCount: 0,
+        relatedListLabelCacheHits: 0,
+        customFieldNamesListAccessCount: 0,
+        customFieldNamesListCacheHits: 0,
+        sortOperationCount: 0,
+        sortOptimizationSavings: 0,
         renderCallbackCount: 0,
         lastRenderTime: 0
     };
@@ -86,6 +89,17 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         relatedListIcon: null,
         fieldNames: null
     };
+
+    // Fix #6: Cache relatedListLabel
+    _cachedRelatedListLabel = null;
+    _lastLabelInputs = {
+        baseLabel: null,
+        recordCount: null
+    };
+
+    // Fix #7: Cache customFieldNamesList
+    _cachedCustomFieldNamesList = [];
+    _lastFieldNamesString = '';
     
     // ===== UTILITY METHODS FOR DEBUGGING =====
     
@@ -174,14 +188,31 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
     
     get relatedListLabel() {
+        this._perfMetrics.relatedListLabelAccessCount++;
+
+        // Fix #6: Only recalculate when label or count changes
         const baseLabel = this.configObj.relatedListLabel || 'Related Records';
-        
-        // Add count if we have data
-        if (this.hasData && this.allRecords.length > 0) {
-            return `${baseLabel} (${this.allRecords.length})`;
+        const recordCount = this.hasData ? this.allRecords.length : 0;
+
+        // Check if inputs changed
+        if (this._lastLabelInputs.baseLabel !== baseLabel ||
+            this._lastLabelInputs.recordCount !== recordCount) {
+
+            // Update cache
+            this._lastLabelInputs.baseLabel = baseLabel;
+            this._lastLabelInputs.recordCount = recordCount;
+
+            // Recalculate label
+            if (this.hasData && recordCount > 0) {
+                this._cachedRelatedListLabel = `${baseLabel} (${recordCount})`;
+            } else {
+                this._cachedRelatedListLabel = baseLabel;
+            }
+        } else {
+            this._perfMetrics.relatedListLabelCacheHits++;
         }
-        
-        return baseLabel;
+
+        return this._cachedRelatedListLabel;
     }
     
     get showViewMore() {
@@ -228,10 +259,25 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
 
     get customFieldNamesList() {
-        if (!this.fieldNames || this.fieldNames.trim() === '') {
-            return [];
+        this._perfMetrics.customFieldNamesListAccessCount++;
+
+        // Fix #7: Only recalculate when fieldNames string changes
+        if (this.fieldNames !== this._lastFieldNamesString) {
+            this._lastFieldNamesString = this.fieldNames;
+
+            if (!this.fieldNames || this.fieldNames.trim() === '') {
+                this._cachedCustomFieldNamesList = [];
+            } else {
+                this._cachedCustomFieldNamesList = this.fieldNames
+                    .split(',')
+                    .map(name => name.trim())
+                    .filter(name => name.length > 0);
+            }
+        } else {
+            this._perfMetrics.customFieldNamesListCacheHits++;
         }
-        return this.fieldNames.split(',').map(name => name.trim()).filter(name => name.length > 0);
+
+        return this._cachedCustomFieldNamesList;
     }
 
     getCustomFieldLabel(fieldInfo, index) {
@@ -1512,9 +1558,12 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         this.lastUISignature = '';
 
         // Reset metrics for this refresh cycle
-        this._perfMetrics.configObjAccessCount = 0;
-        this._perfMetrics.dataSignatureAccessCount = 0;
-        this._perfMetrics.uiSignatureAccessCount = 0;
+        this._perfMetrics.relatedListLabelAccessCount = 0;
+        this._perfMetrics.relatedListLabelCacheHits = 0;
+        this._perfMetrics.customFieldNamesListAccessCount = 0;
+        this._perfMetrics.customFieldNamesListCacheHits = 0;
+        this._perfMetrics.sortOperationCount = 0;
+        this._perfMetrics.sortOptimizationSavings = 0;
 
         // Invalidate signature caches to force fresh comparison
         this._cachedDataSignature = null;
@@ -1531,15 +1580,29 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
 
     logPerformanceMetrics(label) {
         console.log(`\n========== PERFORMANCE METRICS ${label} ==========`);
-        console.log(`✓ FIX #1 APPLIED: Cached configObj (JSON.parse only on change)`);
-        console.log(`✓ FIX #2 APPLIED: Removed @track from 14 primitives`);
-        console.log(`✓ FIX #3 APPLIED: Cached dataSignature & uiSignature (JSON.stringify only on change)`);
-        console.log(`configObj accesses: ${this._perfMetrics.configObjAccessCount}`);
-        console.log(`dataSignature accesses: ${this._perfMetrics.dataSignatureAccessCount}`);
-        console.log(`uiSignature accesses: ${this._perfMetrics.uiSignatureAccessCount}`);
-        console.log(`renderedCallback calls: ${this._perfMetrics.renderCallbackCount}`);
-        console.log(`Last render time: ${this._perfMetrics.lastRenderTime.toFixed(2)}ms`);
-        console.log(`@track properties: 3 (was 17) - Only arrays: allRecords, displayedRecords, columns`);
+        console.log(`✓ FIX #6: Cached relatedListLabel getter`);
+        console.log(`  - Label accesses: ${this._perfMetrics.relatedListLabelAccessCount}`);
+        console.log(`  - Cache hits: ${this._perfMetrics.relatedListLabelCacheHits}`);
+        const labelHitRate = this._perfMetrics.relatedListLabelAccessCount > 0
+            ? ((this._perfMetrics.relatedListLabelCacheHits / this._perfMetrics.relatedListLabelAccessCount) * 100).toFixed(1)
+            : '0.0';
+        console.log(`  - Cache hit rate: ${labelHitRate}%`);
+
+        console.log(`✓ FIX #7: Cached customFieldNamesList`);
+        console.log(`  - List accesses: ${this._perfMetrics.customFieldNamesListAccessCount}`);
+        console.log(`  - Cache hits: ${this._perfMetrics.customFieldNamesListCacheHits}`);
+        const listHitRate = this._perfMetrics.customFieldNamesListAccessCount > 0
+            ? ((this._perfMetrics.customFieldNamesListCacheHits / this._perfMetrics.customFieldNamesListAccessCount) * 100).toFixed(1)
+            : '0.0';
+        console.log(`  - Cache hit rate: ${listHitRate}%`);
+
+        console.log(`✓ FIX #8: Optimized sorting algorithm`);
+        console.log(`  - Sort operations: ${this._perfMetrics.sortOperationCount}`);
+        console.log(`  - Value extractions saved: ${this._perfMetrics.sortOptimizationSavings}`);
+
+        console.log(`\nRender metrics:`);
+        console.log(`  - renderedCallback calls: ${this._perfMetrics.renderCallbackCount}`);
+        console.log(`  - Last render time: ${this._perfMetrics.lastRenderTime.toFixed(2)}ms`);
         console.log(`================================================\n`);
     }
     
@@ -1597,28 +1660,37 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
 
     sortData(fieldName, direction) {
         try {
+            this._perfMetrics.sortOperationCount++;
             this.debugLog('Sorting data by field:', fieldName, 'direction:', direction);
-            
-            // Create a copy of allRecords for sorting
-            const recordsToSort = [...this.allRecords];
-            
-            recordsToSort.sort((a, b) => {
-                let aVal = this.getFieldValue(a, fieldName);
-                let bVal = this.getFieldValue(b, fieldName);
-                
+
+            // Fix #8: Pre-extract and normalize all values ONCE before sorting
+            // This avoids calling getFieldValue() N*log(N) times during sort comparisons
+            const recordsWithValues = this.allRecords.map(record => {
+                let value = this.getFieldValue(record, fieldName);
+
+                // Normalize the value once
+                if (value != null && typeof value !== 'string' && typeof value !== 'number') {
+                    value = String(value);
+                }
+
+                return { record, value };
+            });
+
+            // Track optimization savings
+            const comparisonCount = Math.ceil(this.allRecords.length * Math.log2(this.allRecords.length));
+            const savedExtractions = comparisonCount * 2 - this.allRecords.length;
+            this._perfMetrics.sortOptimizationSavings += savedExtractions;
+
+            // Now sort using the pre-extracted values
+            recordsWithValues.sort((a, b) => {
+                const aVal = a.value;
+                const bVal = b.value;
+
                 // Handle null/undefined values
                 if (aVal == null && bVal == null) return 0;
                 if (aVal == null) return direction === 'asc' ? -1 : 1;
                 if (bVal == null) return direction === 'asc' ? 1 : -1;
-                
-                // Convert to strings for comparison if they're not already
-                if (typeof aVal !== 'string' && typeof aVal !== 'number') {
-                    aVal = String(aVal);
-                }
-                if (typeof bVal !== 'string' && typeof bVal !== 'number') {
-                    bVal = String(bVal);
-                }
-                
+
                 // Perform comparison
                 let result = 0;
                 if (aVal < bVal) {
@@ -1626,13 +1698,14 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
                 } else if (aVal > bVal) {
                     result = 1;
                 }
-                
+
                 return direction === 'asc' ? result : -result;
             });
-            
-            this.allRecords = recordsToSort;
+
+            // Extract sorted records
+            this.allRecords = recordsWithValues.map(item => item.record);
             this.debugLog('Data sorted successfully');
-            
+
         } catch (error) {
             this.logError('Error sorting data:', error);
         }
