@@ -335,6 +335,23 @@ export default class SlotTestCpe extends LightningElement {
                 { label: '3 Columns', value: '3' },
                 { label: '4 Columns', value: '4' }
             ]
+        },
+        cardGridColumns: {
+            key: 'cardGridColumns',
+            label: 'Card Grid Columns',
+            type: 'select',
+            help: 'Number of columns to display cards in when Card display mode is selected.',
+            required: false,
+            valuePath: 'cardGridColumns',
+            value: '1',
+            doSetDefaultValue: true,
+            classes: defaultCSSClasses,
+            options: [
+                { label: '1 Column', value: '1' },
+                { label: '2 Columns', value: '2' },
+                { label: '3 Columns', value: '3' },
+                { label: '4 Columns', value: '4' }
+            ]
         }
     };
 
@@ -368,6 +385,11 @@ export default class SlotTestCpe extends LightningElement {
     get showRecordLinkingSettings() {
         // Hide Record Linking for Files - show for Standard and Articles
         return this.propInputs.relatedListType.value !== 'files';
+    }
+
+    // Check if Cards display mode is selected
+    get isCardsMode() {
+        return this.propInputs.displayMode.value === 'cards';
     }
 
     get isStandardType() {
@@ -642,10 +664,23 @@ export default class SlotTestCpe extends LightningElement {
             this.propInputs.filesGridColumns.value = newValue;
             let tmpvalueObj = this.getValueObj();
             tmpvalueObj.filesGridColumns = this.propInputs.filesGridColumns.value;
-            this.dispatchEvent(new CustomEvent("valuechange", 
+            this.dispatchEvent(new CustomEvent("valuechange",
                 {detail: {value: JSON.stringify(tmpvalueObj)}}));
         } catch (error) {
             //console.error('Error in handleFilesGridColumnsChange:', error);
+        }
+    }
+
+    handleCardGridColumnsChange(e) {
+        try {
+            const newValue = this.getEventValue(e, false);
+            this.propInputs.cardGridColumns.value = newValue;
+            let tmpvalueObj = this.getValueObj();
+            tmpvalueObj.cardGridColumns = this.propInputs.cardGridColumns.value;
+            this.dispatchEvent(new CustomEvent("valuechange",
+                {detail: {value: JSON.stringify(tmpvalueObj)}}));
+        } catch (error) {
+            //console.error('Error in handleCardGridColumnsChange:', error);
         }
     }
 

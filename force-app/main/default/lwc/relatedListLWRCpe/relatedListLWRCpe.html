@@ -226,7 +226,7 @@
             <!-- Display Mode Selection - ONLY for Standard -->
             <div class="slds-m-bottom_large slds-m-top_large">
                 <h3 class="slds-text-heading_small slds-m-bottom_small">Display Mode</h3>
-                
+
                 <lightning-select
                     name={propInputs.displayMode.key}
                     label={propInputs.displayMode.label}
@@ -238,6 +238,21 @@
                     field-level-help={propInputs.displayMode.help}
                     class={propInputs.displayMode.classes}>
                 </lightning-select>
+
+                <!-- Card Grid Columns - Only show when Cards mode is selected -->
+                <template if:true={isCardsMode}>
+                    <lightning-select
+                        name={propInputs.cardGridColumns.key}
+                        label={propInputs.cardGridColumns.label}
+                        value={propInputs.cardGridColumns.value}
+                        options={propInputs.cardGridColumns.options}
+                        onchange={handleCardGridColumnsChange}
+                        required={propInputs.cardGridColumns.required}
+                        data-key={propInputs.cardGridColumns.key}
+                        field-level-help={propInputs.cardGridColumns.help}
+                        class={propInputs.cardGridColumns.classes}>
+                    </lightning-select>
+                </template>
             </div>
         </template>
 
