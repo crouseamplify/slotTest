@@ -114,7 +114,7 @@
 
 .fixed-header-table {
     height: 200px;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .fixed-header-table lightning-datatable {
@@ -157,16 +157,33 @@
 
 
 /* ============================================
-   CARD LAYOUT (SINGLE COLUMN)
+   CARD LAYOUT (GRID COLUMNS)
    ============================================ */
 
 .fixed-header-table .card-container {
-    display: flex;
-    flex-direction: column;
-    padding: 0 1rem 1rem 1rem;
+    display: grid;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
     background: white;
     height: 100%;
     overflow-y: auto;
+}
+
+/* Card grid column layouts */
+.card-grid-columns-1 {
+    grid-template-columns: 1fr;
+}
+
+.card-grid-columns-2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.card-grid-columns-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.card-grid-columns-4 {
+    grid-template-columns: repeat(4, 1fr);
 }
 
 .record-card {
@@ -258,7 +275,10 @@
 @media (max-width: 768px) {
     .files-grid-columns-2,
     .files-grid-columns-3,
-    .files-grid-columns-4 {
+    .files-grid-columns-4,
+    .card-grid-columns-2,
+    .card-grid-columns-3,
+    .card-grid-columns-4 {
         grid-template-columns: 1fr;
     }
 }
@@ -574,10 +594,13 @@
         grid-template-columns: 1fr;
     }
     
-    /* Files grid - always single column on mobile */
+    /* Files and Card grids - always single column on mobile */
     .files-grid-columns-2,
     .files-grid-columns-3,
-    .files-grid-columns-4 {
+    .files-grid-columns-4,
+    .card-grid-columns-2,
+    .card-grid-columns-3,
+    .card-grid-columns-4 {
         grid-template-columns: 1fr;
     }
     

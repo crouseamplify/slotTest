@@ -676,7 +676,7 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
 
     get showLoadMoreButton() {
-        const hasContent = this.showTable || this.showArticles || this.showFilesGrid;
+        const hasContent = this.showTable || this.showArticles || this.showFilesGrid || this.showCards;
         return hasContent && this.hasMoreRecords && this.showViewMore;
     }
     
@@ -772,6 +772,14 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
 
     get filesGridClass() {
         return `files-grid-container files-grid-columns-${this.filesGridColumns}`;
+    }
+
+    get cardGridColumns() {
+        return this.configObj.cardGridColumns || '1';
+    }
+
+    get cardGridClass() {
+        return `card-container card-grid-columns-${this.cardGridColumns}`;
     }
 
     get hasModalImageError() {

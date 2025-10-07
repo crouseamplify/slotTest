@@ -129,7 +129,7 @@
         <!-- Card View -->
         <template if:true={showCards}>
             <div class="fixed-header-table">
-                <div class="card-container">
+                <div class={cardGridClass}>
                     <template for:each={displayedRecords} for:item="record">
                         <div key={record.Id} class="record-card">
                             <!-- Card Title (First Field) -->
