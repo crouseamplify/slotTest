@@ -86,14 +86,6 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         relatedListIcon: null,
         fieldNames: null
     };
-
-    // Fix #6: Cache computed label
-    _cachedLabel = null;
-    _lastRecordCount = -1;
-
-    // Fix #7: Cache field name parsing
-    _cachedFieldNamesList = null;
-    _lastFieldNames = '';
     
     // ===== UTILITY METHODS FOR DEBUGGING =====
     
@@ -182,21 +174,14 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
     
     get relatedListLabel() {
-        // Fix #6: Only recalculate if record count changed
-        if (this._lastRecordCount !== this.allRecords.length) {
-            const baseLabel = this.configObj.relatedListLabel || 'Related Records';
-
-            // Add count if we have data
-            if (this.hasData && this.allRecords.length > 0) {
-                this._cachedLabel = `${baseLabel} (${this.allRecords.length})`;
-            } else {
-                this._cachedLabel = baseLabel;
-            }
-
-            this._lastRecordCount = this.allRecords.length;
+        const baseLabel = this.configObj.relatedListLabel || 'Related Records';
+        
+        // Add count if we have data
+        if (this.hasData && this.allRecords.length > 0) {
+            return `${baseLabel} (${this.allRecords.length})`;
         }
-
-        return this._cachedLabel;
+        
+        return baseLabel;
     }
     
     get showViewMore() {
@@ -243,20 +228,10 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     }
 
     get customFieldNamesList() {
-        // Fix #7: Cache field name parsing to avoid repeated split/map/filter
-        if (this.fieldNames !== this._lastFieldNames) {
-            if (!this.fieldNames || this.fieldNames.trim() === '') {
-                this._cachedFieldNamesList = [];
-            } else {
-                this._cachedFieldNamesList = this.fieldNames
-                    .split(',')
-                    .map(name => name.trim())
-                    .filter(name => name.length > 0);
-            }
-            this._lastFieldNames = this.fieldNames;
+        if (!this.fieldNames || this.fieldNames.trim() === '') {
+            return [];
         }
-
-        return this._cachedFieldNamesList;
+        return this.fieldNames.split(',').map(name => name.trim()).filter(name => name.length > 0);
     }
 
     getCustomFieldLabel(fieldInfo, index) {
@@ -1559,9 +1534,6 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         console.log(`✓ FIX #1 APPLIED: Cached configObj (JSON.parse only on change)`);
         console.log(`✓ FIX #2 APPLIED: Removed @track from 14 primitives`);
         console.log(`✓ FIX #3 APPLIED: Cached dataSignature & uiSignature (JSON.stringify only on change)`);
-        console.log(`✓ FIX #6 APPLIED: Cached relatedListLabel`);
-        console.log(`✓ FIX #7 APPLIED: Cached customFieldNamesList`);
-        console.log(`✓ FIX #8 APPLIED: Optimized sorting algorithm (pre-extract values)`);
         console.log(`configObj accesses: ${this._perfMetrics.configObjAccessCount}`);
         console.log(`dataSignature accesses: ${this._perfMetrics.dataSignatureAccessCount}`);
         console.log(`uiSignature accesses: ${this._perfMetrics.uiSignatureAccessCount}`);
@@ -1626,50 +1598,41 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     sortData(fieldName, direction) {
         try {
             this.debugLog('Sorting data by field:', fieldName, 'direction:', direction);
-
-            // Fix #8: Pre-extract and normalize values ONCE instead of on every comparison
-            const sortableRecords = this.allRecords.map((record, index) => {
-                let rawValue = this.getFieldValue(record, fieldName);
-
-                // Normalize value once (not on every comparison)
-                let sortValue;
-                if (rawValue == null) {
-                    sortValue = null;
-                } else if (typeof rawValue !== 'string' && typeof rawValue !== 'number') {
-                    sortValue = String(rawValue);
-                } else {
-                    sortValue = rawValue;
-                }
-
-                return {
-                    record,
-                    sortValue,
-                    originalIndex: index
-                };
-            });
-
-            // Sort using pre-extracted values (much faster - no function calls in comparator)
-            sortableRecords.sort((a, b) => {
+            
+            // Create a copy of allRecords for sorting
+            const recordsToSort = [...this.allRecords];
+            
+            recordsToSort.sort((a, b) => {
+                let aVal = this.getFieldValue(a, fieldName);
+                let bVal = this.getFieldValue(b, fieldName);
+                
                 // Handle null/undefined values
-                if (a.sortValue == null && b.sortValue == null) return 0;
-                if (a.sortValue == null) return direction === 'asc' ? -1 : 1;
-                if (b.sortValue == null) return direction === 'asc' ? 1 : -1;
-
-                // Simple comparison
+                if (aVal == null && bVal == null) return 0;
+                if (aVal == null) return direction === 'asc' ? -1 : 1;
+                if (bVal == null) return direction === 'asc' ? 1 : -1;
+                
+                // Convert to strings for comparison if they're not already
+                if (typeof aVal !== 'string' && typeof aVal !== 'number') {
+                    aVal = String(aVal);
+                }
+                if (typeof bVal !== 'string' && typeof bVal !== 'number') {
+                    bVal = String(bVal);
+                }
+                
+                // Perform comparison
                 let result = 0;
-                if (a.sortValue < b.sortValue) {
+                if (aVal < bVal) {
                     result = -1;
-                } else if (a.sortValue > b.sortValue) {
+                } else if (aVal > bVal) {
                     result = 1;
                 }
-
+                
                 return direction === 'asc' ? result : -result;
             });
-
-            // Extract sorted records
-            this.allRecords = sortableRecords.map(item => item.record);
+            
+            this.allRecords = recordsToSort;
             this.debugLog('Data sorted successfully');
-
+            
         } catch (error) {
             this.logError('Error sorting data:', error);
         }
