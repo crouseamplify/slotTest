@@ -130,25 +130,25 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
     
     debugLog(message, ...args) {
         if (this.showDebugInfo) {
-            console.log(`[SlotTest Debug] ${message}`, ...args);
+            console.log(`[Related List LWR Debug] ${message}`, ...args);
         }
     }
 
     debugWarn(message, ...args) {
         if (this.showDebugInfo) {
-            console.warn(`[SlotTest Debug] ${message}`, ...args);
+            console.warn(`[Related List LWR Debug] ${message}`, ...args);
         }
     }
 
     debugError(message, ...args) {
         if (this.showDebugInfo) {
-            console.error(`[SlotTest Debug] ${message}`, ...args);
+            console.error(`[Related List LWR Debug] ${message}`, ...args);
         }
     }
 
     // Always log errors regardless of debug mode
     logError(message, ...args) {
-        console.error(`[SlotTest Error] ${message}`, ...args);
+        console.error(`[Related List LWR Error] ${message}`, ...args);
     }
     
     // ===== COMPUTED CONFIGURATION PROPERTIES =====
