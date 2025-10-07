@@ -68,10 +68,9 @@ public with sharing class RelatedListLWRController {
             throw new AuraHandledException('Error retrieving related list info: ' + e.getMessage());
         }
     }
-    
-    // ===== SHARED UTILITY METHODS =====
+
     // ===== ARL-SPECIFIC METHODS =====
-    
+
     private static RelationshipMapping findRelatedListMapping(String parentObjectType, String searchName, String relationshipField) {
         System.debug('RelatedListLWR: Finding relationship mapping for: ' + parentObjectType + ' -> ' + searchName + ' with relationshipField: ' + relationshipField);
         
@@ -278,9 +277,9 @@ public with sharing class RelatedListLWRController {
         // Default fields for any object (including custom objects)
         return new List<String>{'Name', 'CreatedDate', 'LastModifiedDate'};
     }
-    
-    // ===== SOQL-SPECIFIC METHODS =====
-    
+
+    // ===== FIELD PROCESSING METHODS =====
+
     private static FieldInfo processField(String fieldName, Map<String, Schema.SObjectField> fieldMap) {
         try {
             // Handle relationship fields (e.g., Account.Name)
@@ -384,8 +383,8 @@ public with sharing class RelatedListLWRController {
     }
     
     // ===== WRAPPER CLASSES =====
-    
-    // Enhanced wrapper classes that work for both SOQL and ARL modes
+
+    // Wrapper classes for ARL mode
     public class FieldInfo {
         @AuraEnabled public String apiName;
         @AuraEnabled public String label;

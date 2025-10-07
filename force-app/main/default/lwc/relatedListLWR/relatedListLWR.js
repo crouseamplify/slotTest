@@ -1071,8 +1071,8 @@ export default class SlotTest extends NavigationMixin(LightningElement) {
         }
     }
 
-    // ===== SOQL MODE DATA LOADING =====
-    
+    // ===== SHARED DATA PROCESSING METHODS =====
+
     flattenRecords(records) {
         this.debugLog('Flattening records:', records);
 
